@@ -1,13 +1,21 @@
 from fastapi import FastAPI
+from app.config import APP_NAME, APP_VERSION, APP_ENV
 
 app = FastAPI()
 
 
 @app.get("/")
-def read_root():
-    return {"message": "AI Document Assistant API"}
+def get_root():
+    return {"Miapp": APP_NAME,
+            "version": APP_VERSION,
+            "environment": APP_ENV}
 
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", 
+            "app": APP_NAME}
+
+@app.get("/about")
+def about():
+    return {"message": "This is an AI Document Assistant API built with FastAPI."}
