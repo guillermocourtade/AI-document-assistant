@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.config import APP_NAME, APP_VERSION, APP_ENV
+from Models.message import Message
 
 app = FastAPI()
 
@@ -19,3 +20,7 @@ def health_check():
 @app.get("/about")
 def about():
     return {"message": "This is an AI Document Assistant API built with FastAPI."}
+
+@app.post("/chat")
+def chat(message: Message):
+    return {"received": message.message}
