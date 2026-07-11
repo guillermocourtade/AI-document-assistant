@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from models.message import Message
-from services.openai_service import generate_response
+from app.models.message import Message
+from app.services.openai_service import generate_response
 
 router = APIRouter()
 
