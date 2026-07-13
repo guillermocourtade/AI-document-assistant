@@ -45,3 +45,4 @@ def generate_embeddings(chunks):
         })
 
     return embeddings
+
