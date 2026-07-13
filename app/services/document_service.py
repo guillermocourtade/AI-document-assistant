@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from pypdf import PdfReader
 from io import BytesIO
+from app.services.openai_service import generate_embedding
 
 def validate_pdf(file):
     if file.content_type != "application/pdf":
@@ -31,3 +32,16 @@ def split_text(text, chunk_size=500):
         chunks.append(chunk)
 
     return chunks
+
+def generate_embeddings(chunks):
+    embeddings = []
+
+    for chunk in chunks:
+        embedding = generate_embedding(chunk)
+
+        embeddings.append({
+            "text": chunk,
+            "embedding": embedding
+        })
+
+    return embeddings
