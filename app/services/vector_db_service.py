@@ -1,4 +1,5 @@
 import chromadb
+from app.services.openai_service import generate_embedding
 
 client = chromadb.PersistentClient(path="./chroma_db")
 
@@ -14,3 +15,14 @@ def save_chunks(chunks_with_embeddings):
             documents=[item["text"]],
             embeddings=[item["embedding"]]
         )
+
+def search_similar_chunks(question, n_results=3):
+
+    question_embedding = generate_embedding(question)
+
+    results = collection.query(
+        query_embeddings=[question_embedding],
+        n_results=n_results
+    )
+
+    return results
