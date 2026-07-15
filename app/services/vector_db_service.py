@@ -25,4 +25,5 @@ def search_similar_chunks(question, n_results=3):
         n_results=n_results
     )
 
-    return results
+    return results.get("documents", [[]])[0]
+
