@@ -7,18 +7,30 @@ from app.services.vector_db_service import search_similar_chunks
 router = APIRouter()
 
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_document(file: UploadFile = File(...)):
     validate_pdf(file)
-    text = extract_text_from_pdf(file)
-    chunks = split_text(text)
-    embeddings = generate_embeddings(chunks)
-    save_chunks(embeddings)
-    return {"filename": file.filename, 
-            "text": text,
-            "num_chunks": len(chunks),
-            "embeddings_created" : len(embeddings),
-            "preview": embeddings[:2]}
 
+    text = extract_text_from_pdf(file)
+    if not text.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="No se pudo extraer texto del PDF."
+        )
+
+    chunks = split_text(text)
+    chunks_with_embeddings = generate_embeddings(chunks)
+
+    document_id = save_chunks(
+        chunks_with_embeddings,
+        file.filename
+    )
+
+    return {
+        "message": "Documento procesado correctamente",
+        "document_id": document_id,
+        "filename": file.filename,
+        "chunks_saved": len(chunks_with_embeddings)
+    }
 
 @router.post("/search")
 def search(message: Message):
