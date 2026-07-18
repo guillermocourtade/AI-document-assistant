@@ -7,11 +7,12 @@ router = APIRouter()
 
 @router.post("/chat")
 def chat_endpoint(message: Message):
-    chunks = search_similar_chunks(message.message)
+    chunks, metadatas = search_similar_chunks(message.message)
     
     answer = generate_response(
         message.message,
         chunks)
     
     return {
-        "answer": answer}
+        "answer": answer, 
+        "sources": metadatas}

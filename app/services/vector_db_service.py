@@ -55,4 +55,7 @@ def search_similar_chunks(
         n_results=n_results
     )
 
-    return results.get("documents", [[]])[0]
+    documents = results.get("documents", [[]])[0]
+    metadatas = results.get("metadatas", [[]])[0]
+
+    return documents, metadatas
