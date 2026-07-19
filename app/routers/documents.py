@@ -11,6 +11,7 @@ async def upload_document(file: UploadFile = File(...)):
     validate_pdf(file)
 
     text = extract_text_from_pdf(file)
+
     if not text.strip():
         raise HTTPException(
             status_code=400,
@@ -18,6 +19,7 @@ async def upload_document(file: UploadFile = File(...)):
         )
 
     chunks = split_text(text)
+
     chunks_with_embeddings = generate_embeddings(chunks)
 
     document_id = save_chunks(
@@ -26,12 +28,13 @@ async def upload_document(file: UploadFile = File(...)):
     )
 
     return {
-        "message": "Documento procesado correctamente",
+        "message": "Documento procesado correctamente.",
         "document_id": document_id,
         "filename": file.filename,
-        "chunks_saved": len(chunks_with_embeddings)
+        "chunks_saved": len(chunks)
     }
 
+   
 @router.post("/search")
 def search(message: Message):
 
