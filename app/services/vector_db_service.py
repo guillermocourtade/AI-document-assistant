@@ -1,8 +1,11 @@
 import uuid
-
 import chromadb
-
 from app.services.openai_service import generate_embedding
+from app.exceptions.custom_exceptions import VectorDatabaseError
+from app.exceptions.custom_exceptions import (
+    DocumentNotFoundError,
+    VectorDatabaseError,
+)
 
 
 client = chromadb.PersistentClient(path="./chroma_db")
@@ -45,31 +48,69 @@ def save_chunks(
 
 def search_similar_chunks(
     question: str,
+    n_results: int = 4,
     document_id: str | None = None,
-    n_results: int = 5,
-    max_distance: float = 1.5
+    max_distance: float = 1.2,
 ) -> list[str]:
-    question_embedding = generate_embedding(question)
+    if document_id is not None and not document_exists(document_id):
+        raise DocumentNotFoundError(
+            f"No existe un documento con el ID '{document_id}'."
+        )
 
-    query_arguments = {
-        "query_embeddings": [question_embedding],
-        "n_results": n_results
-    }
+    try:
+        question_embedding = generate_embedding(question)
 
-    if document_id is not None:
-        query_arguments["where"] = {
-            "document_id": document_id
+        query_arguments = {
+            "query_embeddings": [question_embedding],
+            "n_results": n_results,
+            "include": ["documents", "distances"],
         }
 
-    results = collection.query(**query_arguments)
+        if document_id is not None:
+            query_arguments["where"] = {
+                "document_id": document_id,
+            }
 
-    documents = results.get("documents", [[]])[0]
-    distances = results.get("distances", [[]])[0]
+        results = collection.query(**query_arguments)
 
-    relevant_documents = []
+    except DocumentNotFoundError:
+        raise
+    except Exception as exception:
+        raise VectorDatabaseError(
+            "No fue posible consultar la base vectorial."
+        ) from exception
 
-    for document, distance in zip(documents, distances):
-        if distance <= max_distance:
-            relevant_documents.append(document)
+    documents = results.get("documents", [])
+    distances = results.get("distances", [])
 
-    return relevant_documents
+    if not documents or not distances:
+        return []
+
+    retrieved_documents = documents[0]
+    retrieved_distances = distances[0]
+
+    relevant_chunks = [
+        chunk
+        for chunk, distance in zip(
+            retrieved_documents,
+            retrieved_distances,
+        )
+        if distance <= max_distance
+    ]
+
+    return relevant_chunks
+
+def document_exists(document_id: str) -> bool:
+    try:
+        results = collection.get(
+            where={"document_id": document_id},
+            limit=1,
+        )
+    except Exception as exception:
+        raise VectorDatabaseError(
+            "No fue posible verificar el documento en la base vectorial."
+        ) from exception
+
+    ids = results.get("ids", [])
+
+    return bool(ids)
