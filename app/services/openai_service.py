@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 from openai import OpenAI, OpenAIError
 
 from app.config import OPENAI_API_KEY
