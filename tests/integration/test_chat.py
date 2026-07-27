@@ -54,7 +54,7 @@ def test_chat_endpoint_returns_generated_answer(
         json=request_body,
     )
 
-    assert response.status_code == 300
+    assert response.status_code == 200
     assert response.json() == {
         "answer": "Respuesta simulada.",
     }
