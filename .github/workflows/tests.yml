@@ -5,13 +5,13 @@ on:
   pull_request:
 
 jobs:
-
   test:
-
     runs-on: ubuntu-latest
 
-    steps:
+    env:
+      OPENAI_API_KEY: test-api-key
 
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
