@@ -4,6 +4,7 @@ import type {
   ChatResponse,
   DocumentChatRequest,
   DocumentChatResponse,
+  DocumentsResponse,
   SearchResponse,
   UploadDocumentResponse,
 } from "../types/api";
@@ -50,6 +51,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  listDocuments(): Promise<DocumentsResponse> {
+    return request<DocumentsResponse>("/documents");
+  },
+
   chat(payload: ChatRequest): Promise<ChatResponse> {
     return request<ChatResponse>("/chat", {
       method: "POST",

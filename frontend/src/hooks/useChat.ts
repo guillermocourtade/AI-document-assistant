@@ -1,7 +1,11 @@
 import { useCallback, useState } from "react";
 import { api } from "../api/client";
 import { getFriendlyErrorMessage } from "../api/errors";
-import type { ChatMessage, ChatMode } from "../types/api";
+import type {
+  ChatMessage,
+  ChatMode,
+  DocumentChatResponse,
+} from "../types/api";
 
 const createMessage = (
   role: ChatMessage["role"],
@@ -52,7 +56,9 @@ export function useChat() {
           createMessage(
             "assistant",
             response.answer,
-            "document_id" in response ? response.document_id : undefined,
+            "document_id" in response
+              ? (response as DocumentChatResponse).document_id
+              : undefined,
           ),
         ]);
       } catch (requestError) {

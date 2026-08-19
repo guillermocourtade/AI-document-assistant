@@ -22,10 +22,10 @@ export function DocumentList({
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <div>
           <h2 className="text-sm font-semibold text-slate-950">
-            Documentos de la sesión
+            Documentos subidos
           </h2>
           <p className="text-xs text-slate-500">
-            Guardados en sessionStorage
+            Consultados desde ChromaDB
           </p>
         </div>
         <button
@@ -48,7 +48,7 @@ export function DocumentList({
           </div>
         ) : documents.length === 0 ? (
           <EmptyState
-            title="Sin documentos todavía"
+            title="Sin documentos todavia"
             description="Sube un PDF para habilitar el chat por documento."
           />
         ) : (
@@ -76,7 +76,7 @@ export function DocumentList({
                         {document.filename}
                       </span>
                       <span className="mt-1 block text-xs text-slate-500">
-                        {document.chunks_saved} chunks ·{" "}
+                        {document.chunks_saved} chunks -{" "}
                         {document.document_id.slice(0, 8)}
                       </span>
                     </span>

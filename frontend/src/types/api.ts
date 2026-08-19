@@ -18,6 +18,11 @@ export type UploadDocumentResponse = {
   document_id: string;
   filename: string;
   chunks_saved: number;
+  duplicate?: boolean;
+};
+
+export type DocumentsResponse = {
+  documents: UploadedDocument[];
 };
 
 export type ChatRequest = {
@@ -44,7 +49,7 @@ export type UploadedDocument = {
   document_id: string;
   filename: string;
   chunks_saved: number;
-  uploaded_at: string;
+  uploaded_at?: string;
 };
 
 export type ChatMode = "all" | "document";

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { api } from "../api/client";
 import type { UploadedDocument, UploadDocumentResponse } from "../types/api";
 
 const STORAGE_KEY = "ai-document-assistant.documents";
@@ -22,8 +23,47 @@ export function useDocuments() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    setDocuments(readDocuments());
-    setIsLoaded(true);
+    let isMounted = true;
+
+    async function loadDocuments() {
+      const sessionDocuments = readDocuments();
+
+      try {
+        const response = await api.listDocuments();
+
+        if (!isMounted) {
+          return;
+        }
+
+        const sessionById = new Map(
+          sessionDocuments.map((document) => [
+            document.document_id,
+            document,
+          ]),
+        );
+
+        setDocuments(
+          response.documents.map((document) => ({
+            ...document,
+            uploaded_at: sessionById.get(document.document_id)?.uploaded_at,
+          })),
+        );
+      } catch {
+        if (isMounted) {
+          setDocuments(sessionDocuments);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoaded(true);
+        }
+      }
+    }
+
+    void loadDocuments();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
