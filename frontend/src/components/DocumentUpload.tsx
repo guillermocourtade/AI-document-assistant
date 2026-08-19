@@ -32,7 +32,11 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
       const response = await api.uploadDocument(file, setProgress);
       onUploaded(response);
       setProgress(100);
-      setSuccess(`${response.filename} procesado correctamente.`);
+      setSuccess(
+        response.duplicate
+          ? `${response.filename} ya existía.`
+          : `${response.filename} procesado correctamente.`,
+      );
     } catch (requestError) {
       setError(getFriendlyErrorMessage(requestError));
     } finally {

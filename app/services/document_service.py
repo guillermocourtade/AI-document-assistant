@@ -1,3 +1,5 @@
+import hashlib
+
 from pypdf import PdfReader
 
 from app.exceptions.custom_exceptions import (
@@ -7,6 +9,18 @@ from app.exceptions.custom_exceptions import (
 )
 from app.logger import logger
 from app.services.openai_service import generate_embedding
+
+
+def calculate_file_hash(file) -> str:
+    position = file.file.tell()
+
+    try:
+        file.file.seek(0)
+        file_hash = hashlib.sha256(file.file.read()).hexdigest()
+    finally:
+        file.file.seek(position)
+
+    return file_hash
 
 
 def validate_pdf(file) -> None:

@@ -1,14 +1,34 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.services.document_service import validate_pdf, extract_text_from_pdf, split_text, generate_embeddings
-from app.services.vector_db_service import save_chunks
+from app.services.document_service import calculate_file_hash, validate_pdf, extract_text_from_pdf, split_text, generate_embeddings
+from app.services.vector_db_service import count_document_chunks, find_document_by_hash, list_documents, save_chunks
 from app.models.message import Message
 from app.services.vector_db_service import search_similar_chunks
 
 router = APIRouter()
 
+
+@router.get("/documents")
+def get_documents():
+    return {
+        "documents": list_documents(),
+    }
+
+
 @router.post("/upload")
 async def upload_document(file: UploadFile = File(...)):
     validate_pdf(file)
+
+    file_hash = calculate_file_hash(file)
+    existing_document_id = find_document_by_hash(file_hash)
+
+    if existing_document_id is not None:
+        return {
+            "message": "El documento ya existía.",
+            "document_id": existing_document_id,
+            "filename": file.filename,
+            "chunks_saved": count_document_chunks(existing_document_id),
+            "duplicate": True,
+        }
 
     text = extract_text_from_pdf(file)
 
@@ -24,14 +44,16 @@ async def upload_document(file: UploadFile = File(...)):
 
     document_id = save_chunks(
         chunks_with_embeddings,
-        file.filename
+        file.filename,
+        file_hash,
     )
 
     return {
         "message": "Documento procesado correctamente.",
         "document_id": document_id,
         "filename": file.filename,
-        "chunks_saved": len(chunks)
+        "chunks_saved": len(chunks),
+        "duplicate": False,
     }
 
    
