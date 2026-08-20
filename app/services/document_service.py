@@ -114,7 +114,7 @@ def split_text(
 
 
 def generate_embeddings(
-    chunks: list[str],
+    chunks: list[dict],
 ) -> list[dict]:
     logger.info(
         "Se inició la generación de embeddings para %d chunks.",
@@ -125,11 +125,12 @@ def generate_embeddings(
 
     try:
         for chunk in chunks:
-            embedding = generate_embedding(chunk)
+            embedding = generate_embedding(chunk["text"])
 
             embeddings.append(
                 {
-                    "text": chunk,
+                    "text": chunk["text"],
+                    "page_number": chunk["page_number"],
                     "embedding": embedding,
                 }
             )
@@ -146,3 +147,62 @@ def generate_embeddings(
     )
 
     return embeddings
+
+def extract_pages_from_pdf(file) -> list[dict]:
+    try:
+        reader = PdfReader(file.file)
+
+        pages = []
+
+        for page_number, page in enumerate(reader.pages, start=1):
+            text = page.extract_text() or ""
+
+            if text.strip():
+                pages.append(
+                    {
+                        "text": text.strip(),
+                        "page_number": page_number,
+                    }
+                )
+
+    except Exception as exc:
+        logger.exception("Error extracting pages from PDF")
+        raise DocumentProcessingError() from exc
+
+    total_text = " ".join(page["text"] for page in pages)
+
+    if len(total_text.strip()) < 20:
+        raise EmptyDocumentError()
+
+    return pages
+
+def split_pages(
+    pages: list[dict],
+    chunk_size: int = 500,
+    overlap: int = 100,
+) -> list[dict]:
+    if overlap >= chunk_size:
+        raise ValueError("overlap must be smaller than chunk_size")
+
+    chunks = []
+
+    for page in pages:
+        text = page["text"]
+        page_number = page["page_number"]
+
+        start = 0
+
+        while start < len(text):
+            chunk = text[start:start + chunk_size]
+
+            if chunk.strip():
+                chunks.append(
+                    {
+                        "text": chunk.strip(),
+                        "page_number": page_number,
+                    }
+                )
+
+            start += chunk_size - overlap
+
+    return chunks

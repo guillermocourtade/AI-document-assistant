@@ -141,6 +141,7 @@ def save_chunks(
                 "filename": filename,
                 "file_hash": file_hash,
                 "chunk_index": index,
+                "page_number": item["page_number"],
             }
         )
 

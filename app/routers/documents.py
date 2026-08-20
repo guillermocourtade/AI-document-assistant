@@ -1,8 +1,23 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.services.document_service import calculate_file_hash, validate_pdf, extract_text_from_pdf, split_text, generate_embeddings
-from app.services.vector_db_service import count_document_chunks, find_document_by_hash, list_documents, save_chunks
+from fastapi import APIRouter, UploadFile, File
+
 from app.models.message import Message
-from app.services.vector_db_service import search_similar_chunks
+
+from app.services.document_service import (
+    calculate_file_hash,
+    validate_pdf,
+    extract_pages_from_pdf,
+    split_pages,
+    generate_embeddings,
+)
+
+from app.services.vector_db_service import (
+    count_document_chunks,
+    find_document_by_hash,
+    list_documents,
+    save_chunks,
+    search_similar_chunks,
+)
+
 
 router = APIRouter()
 
@@ -30,15 +45,9 @@ async def upload_document(file: UploadFile = File(...)):
             "duplicate": True,
         }
 
-    text = extract_text_from_pdf(file)
+    pages = extract_pages_from_pdf(file)
 
-    if not text.strip():
-        raise HTTPException(
-            status_code=400,
-            detail="No se pudo extraer texto del PDF."
-        )
-
-    chunks = split_text(text)
+    chunks = split_pages(pages)
 
     chunks_with_embeddings = generate_embeddings(chunks)
 
@@ -56,10 +65,9 @@ async def upload_document(file: UploadFile = File(...)):
         "duplicate": False,
     }
 
-   
+
 @router.post("/search")
 def search(message: Message):
-
     results = search_similar_chunks(message.message)
 
     return results
