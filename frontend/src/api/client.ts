@@ -50,25 +50,36 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
+const withSources = <T extends ChatResponse | DocumentChatResponse>(
+  response: T,
+): T => ({
+  ...response,
+  sources: Array.isArray(response.sources) ? response.sources : [],
+});
+
 export const api = {
   listDocuments(): Promise<DocumentsResponse> {
     return request<DocumentsResponse>("/documents");
   },
 
-  chat(payload: ChatRequest): Promise<ChatResponse> {
-    return request<ChatResponse>("/chat", {
+  async chat(payload: ChatRequest): Promise<ChatResponse> {
+    const response = await request<ChatResponse>("/chat", {
       method: "POST",
       body: JSON.stringify(payload),
     });
+
+    return withSources(response);
   },
 
-  chatDocument(
+  async chatDocument(
     payload: DocumentChatRequest,
   ): Promise<DocumentChatResponse> {
-    return request<DocumentChatResponse>("/chat/document", {
+    const response = await request<DocumentChatResponse>("/chat/document", {
       method: "POST",
       body: JSON.stringify(payload),
     });
+
+    return withSources(response);
   },
 
   search(payload: ChatRequest): Promise<SearchResponse> {

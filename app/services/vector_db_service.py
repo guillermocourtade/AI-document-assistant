@@ -266,6 +266,116 @@ def search_similar_chunks(
     return relevant_chunks
 
 
+def search_similar_chunks_with_metadata(
+    question: str,
+    n_results: int = 4,
+    document_id: str | None = None,
+    max_distance: float = 1.2,
+) -> list[dict]:
+    logger.info(
+        "Iniciando búsqueda vectorial con metadata. "
+        "document_id=%s, top_k=%d, max_distance=%.2f.",
+        document_id,
+        n_results,
+        max_distance,
+    )
+
+    if document_id is not None and not document_exists(document_id):
+        logger.warning(
+            "No existe el documento solicitado. document_id=%s.",
+            document_id,
+        )
+
+        raise DocumentNotFoundError(
+            f"No existe un documento con el ID '{document_id}'."
+        )
+
+    # Si OpenAI falla, debe conservarse AIServiceError.
+    question_embedding = generate_embedding(question)
+
+    query_arguments = {
+        "query_embeddings": [question_embedding],
+        "n_results": n_results,
+        "include": ["documents", "distances", "metadatas"],
+    }
+
+    if document_id is not None:
+        query_arguments["where"] = {
+            "document_id": document_id,
+        }
+
+    try:
+        results = get_collection().query(**query_arguments)
+
+    except Exception as exception:
+        logger.exception(
+            "Error consultando la base vectorial con metadata. "
+            "document_id=%s.",
+            document_id,
+        )
+
+        raise VectorDatabaseError(
+            "No fue posible consultar la base vectorial."
+        ) from exception
+
+    documents = results.get("documents", [])
+    distances = results.get("distances", [])
+    metadatas = results.get("metadatas", [])
+
+    if not documents or not distances:
+        logger.info(
+            "La consulta vectorial con metadata no devolvió resultados. "
+            "document_id=%s.",
+            document_id,
+        )
+
+        return []
+
+    retrieved_documents = documents[0]
+    retrieved_distances = distances[0]
+    retrieved_metadatas = metadatas[0] if metadatas else []
+
+    relevant_chunks: list[dict] = []
+
+    for index, (chunk, distance) in enumerate(
+        zip(retrieved_documents, retrieved_distances)
+    ):
+        if distance > max_distance:
+            continue
+
+        metadata = (
+            retrieved_metadatas[index]
+            if index < len(retrieved_metadatas)
+            and retrieved_metadatas[index] is not None
+            else {}
+        )
+        page_number = metadata.get("page_number")
+
+        if not isinstance(page_number, int):
+            page_number = None
+
+        relevant_chunks.append(
+            {
+                "text": chunk,
+                "filename": metadata.get("filename", "Documento"),
+                "page_number": page_number,
+            }
+        )
+
+    logger.info(
+        "Búsqueda con metadata terminada. recuperados=%d, relevantes=%d.",
+        len(retrieved_documents),
+        len(relevant_chunks),
+    )
+
+    logger.debug(
+        "Distancias recuperadas con metadata: %s.",
+        retrieved_distances,
+    )
+
+    return relevant_chunks
+
+
 def document_exists(document_id: str) -> bool:
     logger.debug(
         "Verificando existencia del documento %s.",
