@@ -29,8 +29,14 @@ export type ChatRequest = {
   message: string;
 };
 
+export type Source = {
+  filename: string;
+  page_number: number | null;
+};
+
 export type ChatResponse = {
   answer: string;
+  sources: Source[];
 };
 
 export type DocumentChatRequest = {
@@ -41,6 +47,7 @@ export type DocumentChatRequest = {
 export type DocumentChatResponse = {
   answer: string;
   document_id: string;
+  sources: Source[];
 };
 
 export type SearchResponse = string[];
@@ -60,4 +67,5 @@ export type ChatMessage = {
   content: string;
   createdAt: string;
   documentId?: string;
+  sources?: Source[];
 };

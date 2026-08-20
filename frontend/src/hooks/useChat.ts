@@ -4,19 +4,21 @@ import { getFriendlyErrorMessage } from "../api/errors";
 import type {
   ChatMessage,
   ChatMode,
-  DocumentChatResponse,
+  Source,
 } from "../types/api";
 
 const createMessage = (
   role: ChatMessage["role"],
   content: string,
   documentId?: string,
+  sources?: Source[],
 ): ChatMessage => ({
   id: crypto.randomUUID(),
   role,
   content,
   createdAt: new Date().toISOString(),
   documentId,
+  sources,
 });
 
 export function useChat() {
@@ -56,9 +58,11 @@ export function useChat() {
           createMessage(
             "assistant",
             response.answer,
-            "document_id" in response
-              ? (response as DocumentChatResponse).document_id
+            "document_id" in response &&
+              typeof response.document_id === "string"
+              ? response.document_id
               : undefined,
+            response.sources,
           ),
         ]);
       } catch (requestError) {

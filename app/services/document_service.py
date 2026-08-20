@@ -148,33 +148,63 @@ def generate_embeddings(
 
     return embeddings
 
+
 def extract_pages_from_pdf(file) -> list[dict]:
+    logger.info(
+        "Se inició la extracción de texto del PDF."
+    )
+
     try:
         reader = PdfReader(file.file)
 
-        pages = []
+        pages: list[dict] = []
 
         for page_number, page in enumerate(reader.pages, start=1):
-            text = page.extract_text() or ""
+            page_text = page.extract_text()
 
-            if text.strip():
+            if page_text:
                 pages.append(
                     {
-                        "text": text.strip(),
+                        "text": page_text,
                         "page_number": page_number,
                     }
                 )
 
-    except Exception as exc:
-        logger.exception("Error extracting pages from PDF")
-        raise DocumentProcessingError() from exc
+        text = "\n".join(
+            page["text"] for page in pages
+        ).strip()
 
-    total_text = " ".join(page["text"] for page in pages)
+    except Exception as exception:
+        logger.exception(
+            "Ocurrió un error al leer o procesar el PDF."
+        )
 
-    if len(total_text.strip()) < 20:
-        raise EmptyDocumentError()
+        raise DocumentProcessingError(
+            "No fue posible leer o procesar el archivo PDF."
+        ) from exception
+
+    logger.info(
+        "El PDF contiene %d páginas.",
+        len(reader.pages),
+    )
+
+    if len(text) < 20:
+        logger.warning(
+            "El PDF no contiene texto suficiente. Caracteres extraídos=%d.",
+            len(text),
+        )
+
+        raise EmptyDocumentError(
+            "El PDF no contiene texto suficiente para procesarse."
+        )
+
+    logger.info(
+        "La extracción terminó correctamente. Caracteres extraídos=%d.",
+        len(text),
+    )
 
     return pages
+
 
 def split_pages(
     pages: list[dict],
@@ -182,9 +212,11 @@ def split_pages(
     overlap: int = 100,
 ) -> list[dict]:
     if overlap >= chunk_size:
-        raise ValueError("overlap must be smaller than chunk_size")
+        raise ValueError(
+            "overlap debe ser menor que chunk_size."
+        )
 
-    chunks = []
+    chunks: list[dict] = []
 
     for page in pages:
         text = page["text"]
@@ -193,16 +225,21 @@ def split_pages(
         start = 0
 
         while start < len(text):
-            chunk = text[start:start + chunk_size]
-
-            if chunk.strip():
-                chunks.append(
-                    {
-                        "text": chunk.strip(),
-                        "page_number": page_number,
-                    }
-                )
+            end = start + chunk_size
+            chunks.append(
+                {
+                    "text": text[start:end],
+                    "page_number": page_number,
+                }
+            )
 
             start += chunk_size - overlap
+
+    logger.info(
+        "Se generaron %d chunks con chunk_size=%d y overlap=%d.",
+        len(chunks),
+        chunk_size,
+        overlap,
+    )
 
     return chunks

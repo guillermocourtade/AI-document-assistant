@@ -182,6 +182,26 @@ export function ChatPanel({
                     <p className="whitespace-pre-wrap break-words">
                       {message.content}
                     </p>
+                    {isAssistant &&
+                      message.sources &&
+                      message.sources.length > 0 && (
+                        <div className="mt-3 border-t border-slate-200 pt-2">
+                          <p className="text-xs font-semibold text-slate-700">
+                            Fuentes
+                          </p>
+                          <ul className="mt-1 space-y-1 text-xs text-slate-500">
+                            {message.sources.map((source, index) => (
+                              <li
+                                key={`${source.filename}-${source.page_number ?? "sin-pagina"}-${index}`}
+                              >
+                                {source.filename}
+                                {source.page_number !== null &&
+                                  ` · página ${source.page_number}`}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                   </div>
                   {!isAssistant && (
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-cyan-600 text-white">
