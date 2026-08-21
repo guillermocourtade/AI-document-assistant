@@ -57,9 +57,11 @@ def test_search_filters_chunks_by_distance(
         ],
     }
 
+    fake_collection = FakeCollection(fake_results)
+
     monkeypatch.setattr(
         "app.services.vector_db_service.get_collection",
-        lambda: FakeCollection(fake_results),
+        lambda: fake_collection,
     )
 
     chunks = search_similar_chunks(
@@ -70,6 +72,7 @@ def test_search_filters_chunks_by_distance(
     assert chunks == [
         "Chunk relevante"
     ]
+    assert fake_collection.query_arguments["n_results"] == 6
 
 
 def test_find_document_by_hash_returns_existing_document(
@@ -262,6 +265,7 @@ def test_structured_search_returns_metadata_and_filters_distance(
         "distances",
         "metadatas",
     ]
+    assert fake_collection.query_arguments["n_results"] == 6
     assert "where" not in fake_collection.query_arguments
 
 

@@ -1,0 +1,2 @@
+# Day 24 retrieval reranking experiment only; not required by production.
+FlashRank==0.2.10
