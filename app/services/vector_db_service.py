@@ -179,7 +179,7 @@ def save_chunks(
 
 def search_similar_chunks(
     question: str,
-    n_results: int = 4,
+    n_results: int = 6,
     document_id: str | None = None,
     max_distance: float = 1.2,
 ) -> list[str]:
@@ -268,7 +268,7 @@ def search_similar_chunks(
 
 def search_similar_chunks_with_metadata(
     question: str,
-    n_results: int = 4,
+    n_results: int = 6,
     document_id: str | None = None,
     max_distance: float = 1.2,
 ) -> list[dict]:

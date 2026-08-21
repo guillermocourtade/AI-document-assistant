@@ -16,7 +16,7 @@ def test_chat_endpoint_returns_generated_answer(
 
     def fake_search_similar_chunks_with_metadata(
         question: str,
-        n_results: int = 4,
+        n_results: int = 6,
     ) -> list[dict]:
         received_data["search_question"] = question
         received_data["n_results"] = n_results
@@ -103,7 +103,7 @@ def test_chat_endpoint_returns_fallback_when_no_chunks_are_found(
 
     def fake_search_similar_chunks_with_metadata(
         question: str,
-        n_results: int = 4,
+        n_results: int = 6,
     ) -> list[dict]:
         return []
 
@@ -147,7 +147,7 @@ def test_document_chat_returns_sources_and_text_only_context(
 
     def fake_search_similar_chunks_with_metadata(
         question: str,
-        n_results: int = 4,
+        n_results: int = 6,
         document_id: str | None = None,
         max_distance: float = 1.2,
     ) -> list[dict]:
