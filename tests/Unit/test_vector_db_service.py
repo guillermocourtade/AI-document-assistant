@@ -229,6 +229,7 @@ def test_structured_search_returns_metadata_and_filters_distance(
                     {
                         "filename": "manual.pdf",
                         "page_number": 2,
+                        "chunk_index": 7,
                     },
                     {
                         "filename": "manual.pdf",
@@ -255,9 +256,11 @@ def test_structured_search_returns_metadata_and_filters_distance(
 
     assert results == [
         {
+            "source_id": "S1",
             "text": "Chunk relevante",
             "filename": "manual.pdf",
             "page_number": 2,
+            "chunk_index": 7,
         }
     ]
     assert fake_collection.query_arguments["include"] == [
@@ -300,9 +303,11 @@ def test_structured_search_filters_document_and_handles_legacy_metadata(
 
     assert results == [
         {
+            "source_id": "S1",
             "text": "Chunk de documento antiguo",
             "filename": "antiguo.pdf",
             "page_number": None,
+            "chunk_index": None,
         }
     ]
     assert fake_collection.query_arguments["where"] == {

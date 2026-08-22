@@ -356,9 +356,11 @@ def search_similar_chunks_with_metadata(
 
         relevant_chunks.append(
             {
+                "source_id": f"S{len(relevant_chunks) + 1}",
                 "text": chunk,
                 "filename": metadata.get("filename", "Documento"),
                 "page_number": page_number,
+                "chunk_index": metadata.get("chunk_index"),
             }
         )
 

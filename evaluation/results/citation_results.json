@@ -1,0 +1,2327 @@
+{
+  "evaluation": "rag_citation_end_to_end",
+  "configuration": {
+    "questions": 25,
+    "generation_model": "gpt-4.1-mini",
+    "generation_function": "app.services.openai_service.generate_cited_response",
+    "retrieval_function": "app.services.vector_db_service.search_similar_chunks_with_metadata",
+    "citation_mapper": "app.routers.chat._map_citations",
+    "n_results": 6,
+    "max_distance": 1.2,
+    "chunk_size": 500,
+    "overlap": 100,
+    "vector_database_isolation": "temporary_directory",
+    "pdf_path": "C:\\Users\\Guillermo\\Desktop\\AI-document-assistant\\evaluation\\data\\NovaTech_Manual_Operativo.pdf",
+    "ground_truth_path": "C:\\Users\\Guillermo\\Desktop\\AI-document-assistant\\evaluation\\data\\RAG_Ground_Truth_con_paginas.md",
+    "pdf_sha256": "826ca1e759cf924fd40ad428fe75779683c9ce059ca47aed7a9f25e511e92b80",
+    "chunks_saved": 99,
+    "citation_hit_definition": "expected_page in final cited_pages",
+    "retrieval_evidence_definition": "all Ground Truth evidence segments occur in one chunk sent to generation"
+  },
+  "summary": {
+    "questions": 25,
+    "citation_hits": 25,
+    "citation_misses": 0,
+    "citation_hit_rate": 1.0,
+    "citation_hit_percentage": 100.0,
+    "retrieval_expected_page_hits": 25,
+    "retrieval_evidence_hits": 25,
+    "retrieval_evidence_but_wrong_citation": 0,
+    "retrieval_evidence_but_no_citation": 0,
+    "generation_errors": 0,
+    "failed_questions": []
+  },
+  "failures": [],
+  "retrieval_evidence_citation_mismatches": [],
+  "results": [
+    {
+      "question_id": "Q01",
+      "question": "¿Cuántos días de anticipación debe dar un empleado que renuncia de forma voluntaria?",
+      "expected_answer": "30 días de anticipación, por escrito.",
+      "section": "15.1 Renuncia voluntaria",
+      "expected_page": 13,
+      "evidence": "\"debe presentar su aviso por escrito con al menos 30 días de anticipación a la fecha propuesta de salida\"",
+      "difficulty": "Easy",
+      "category": "Direct",
+      "retrieved_pages": [
+        5,
+        13,
+        5,
+        5,
+        5,
+        13
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": " o menos pueden presentarse con un mínimo de tres días hábiles \nde anticipación. \nDe los días de vacaciones no utilizados al cierre del año, un máximo de cinco días puede trasladarse al \nejercicio siguiente; el resto de los días no utilizados se pierde el 31 de diciembre de cada año, salvo \nautorización expresa de Recursos Humanos por causas justificadas. \nEn materia de incapacidades por enfermedad, un empleado puede autocertificar hasta tres días \ncontinuos de ausencia por enfermedad sin necesi",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 23
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "otificar formalmente al equipo de Recursos Humanos el mismo día en que se confirme \nla salida. \nRecursos Humanos deberá procesar la liquidación final y los documentos correspondientes dentro de un \nplazo máximo de 10 días hábiles a partir de la fecha de notificación. \n15.3 Revocación de accesos (política HR-045) \nLa política HR-045 establece que los accesos a sistemas críticos deben revocarse dentro de las 24 horas \nsiguientes a la confirmación de la terminación laboral. El resto de los accesos,",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 81
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "manera completa a partir del segundo año de antigüedad. El personal de tiempo parcial recibe un \nnúmero de días proporcional a su jornada laboral contratada. \nLas solicitudes de vacaciones por periodos superiores a cinco días deben presentarse mediante el \nformulario FORM-B22 con al menos diez días hábiles de anticipación a la fecha de inicio solicitada. Las \nsolicitudes por periodos de cinco días o menos pueden presentarse con un mínimo de tres días hábiles \nde anticipación. \nDe los días de vac",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 22
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "d, un empleado puede autocertificar hasta tres días \ncontinuos de ausencia por enfermedad sin necesidad de presentar documentación médica. A partir del \ncuarto día, es obligatorio presentar una constancia médica que respalde la incapacidad. \nAdicionalmente, la compañía otorga cinco días de permiso remunerado por fallecimiento de un familiar \ndirecto, noventa días de licencia de maternidad conforme a la legislación aplicable, y diez días de \nlicencia de paternidad para el otro progenitor. \nLas so",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 24
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "nfirmado hasta que el gerente directo haya aprobado formalmente la solicitud dentro del sistema. \nDurante los periodos de mayor demanda operativa, definidos anualmente por cada Dirección de Área, \nse puede restringir temporalmente la aprobación de nuevas solicitudes de vacaciones. Estas \nrestricciones deben comunicarse con al menos treinta días de anticipación al inicio del periodo \nrestringido, de manera que los equipos puedan planear sus ausencias con suficiente tiempo. \n5. Gastos corporativos",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 26
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "e \ndirecto y el propio colaborador, utilizando el formulario de evaluación disponible en el portal interno de \nRecursos Humanos. \n15. Terminación de empleo \n15.1 Renuncia voluntaria \nTodo empleado que decida renunciar de forma voluntaria debe presentar su aviso por escrito con al \nmenos 30 días de anticipación a la fecha propuesta de salida, salvo acuerdo distinto con su gerente \ndirecto y Recursos Humanos. \n15.2 Terminación con causa \nCuando la relación laboral concluye con causa justificada, l",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 79
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Un empleado que decide renunciar de forma voluntaria debe presentar su aviso por escrito con al menos 30 días de anticipación a la fecha propuesta de salida, salvo acuerdo distinto con su gerente directo y Recursos Humanos [[S6]].",
+      "model_source_ids": [
+        "S6"
+      ],
+      "answer": "Un empleado que decide renunciar de forma voluntaria debe presentar su aviso por escrito con al menos 30 días de anticipación a la fecha propuesta de salida, salvo acuerdo distinto con su gerente directo y Recursos Humanos [p. 13].",
+      "validated_source_ids": [
+        "S6"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13
+        }
+      ],
+      "cited_pages": [
+        13
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q02",
+      "question": "¿A qué hora se ejecutan los backups incrementales?",
+      "expected_answer": "Diariamente a las 23:00 horas.",
+      "section": "11.1 Backups incrementales",
+      "expected_page": 10,
+      "evidence": "\"Los backups incrementales se ejecutan diariamente a las 23:00 horas\"",
+      "difficulty": "Easy",
+      "category": "Direct",
+      "retrieved_pages": [
+        10,
+        10,
+        11,
+        17,
+        11,
+        3
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "desde el último respaldo. Estos respaldos se conservan durante un periodo de \nretención de 14 días antes de ser eliminados automáticamente del sistema. \n11.2 Backups completos \nLos backups completos se ejecutan cada domingo a las 02:00 horas y abarcan la totalidad de los \nsistemas críticos de la compañía, sin excepción. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 62
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "staladas en cada dispositivo. \n11. Backups y continuidad de datos \nLa estrategia de respaldo de información de NovaTech Solutions combina respaldos incrementales y \nrespaldos completos, cada uno con una frecuencia, alcance y periodo de retención distintos. \n11.1 Backups incrementales \nLos backups incrementales se ejecutan diariamente a las 23:00 horas y capturan únicamente los \ncambios realizados desde el último respaldo. Estos respaldos se conservan durante un periodo de \nretención de 14 días a",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 61
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "El equipo de Infraestructura debe validar la integridad de cada backup completo dentro de las 72 horas \nposteriores a su ejecución, mediante una prueba de restauración parcial en un entorno aislado. Los \nbackups completos se conservan durante 90 días en almacenamiento externo bajo el servicio NovaVault \nCloud antes de ser sobrescritos. \nTodos los respaldos, tanto incrementales como completos, se cifran antes de salir del centro de datos \nprimario de la compañía. Las llaves de cifrado utilizadas ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 63
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "RPO (Recovery Point Objective): antigüedad máxima aceptable de los datos recuperados después de una \ninterrupción, medida desde el momento de la última copia de respaldo válida. \nAnexo C. Historial de revisiones \nVersión 1.0, publicada en marzo de 2019: primera edición del manual, cubriendo únicamente horarios, \nvacaciones y gastos corporativos. \nVersión 2.0, publicada en enero de 2022: se incorporaron las secciones de trabajo remoto, seguridad de \nla información y gestión de contraseñas, como r",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 17,
+          "chunk_index": 96
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "ifran antes de salir del centro de datos \nprimario de la compañía. Las llaves de cifrado utilizadas para los respaldos se gestionan de forma \nseparada del propio contenido respaldado, siguiendo el principio de separación de responsabilidades \nadoptado por el equipo de Infraestructura. \nEl equipo de Infraestructura realiza, adicionalmente al ejercicio de validación semanal, una prueba de \nrestauración completa a gran escala dos veces al año, en la cual se reconstruye un entorno completo a \npartir",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 64
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "dos cuentan con flexibilidad para iniciar su jornada en cualquier momento entre las 7:30 y las \n9:30 horas, siempre que se complete la jornada de ocho horas efectivas de trabajo y se respete el \nhorario núcleo. El registro de entradas y salidas se realiza a través del sistema TimeTrack Nova, bajo el \nprocedimiento identificado internamente como ASIS-010. \nLas ausencias no justificadas se registran automáticamente en TimeTrack Nova. La acumulación de más \nde tres ausencias no justificadas en un p",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3,
+          "chunk_index": 9
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Los backups incrementales se ejecutan diariamente a las 23:00 horas [[S2]].",
+      "model_source_ids": [
+        "S2"
+      ],
+      "answer": "Los backups incrementales se ejecutan diariamente a las 23:00 horas [p. 10].",
+      "validated_source_ids": [
+        "S2"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10
+        }
+      ],
+      "cited_pages": [
+        10
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q03",
+      "question": "¿Cuál es el tope diario de gasto en alimentos para un viaje nacional?",
+      "expected_answer": "35 USD por día.",
+      "section": "5.1 Gastos en viajes nacionales",
+      "expected_page": 6,
+      "evidence": "\"El tope diario para alimentos en viajes nacionales es de 35 USD por día\"",
+      "difficulty": "Easy",
+      "category": "Direct",
+      "retrieved_pages": [
+        6,
+        6,
+        5,
+        7,
+        5,
+        6
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "Para viajes dentro del país, los empleados deben presentar su reporte de gastos, junto con los \ncomprobantes correspondientes, dentro de los siguientes 7 días hábiles posteriores a la fecha de \nregreso del viaje. El tope diario para alimentos en viajes nacionales es de 35 USD por día, y el tope por \nnoche de hospedaje es de 120 USD. La aprobación de estos gastos requiere únicamente la firma del \ngerente directo. \n5.2 Gastos en viajes internacionales \nPara viajes fuera del país, el plazo para pre",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 29
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "erente directo. \n5.2 Gastos en viajes internacionales \nPara viajes fuera del país, el plazo para presentar el reporte de gastos se extiende a 15 días hábiles \nposteriores al regreso del viaje. El tope diario para alimentos en este caso es de 60 USD por día, y el tope \npor noche de hospedaje es de 200 USD. A diferencia de los gastos nacionales, los gastos internacionales \nrequieren la aprobación previa tanto del Director de Área como del equipo de Finanzas antes de que el \nviaje sea reservado. \nL",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 30
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "sto \ndifieren significativamente. \n5.1 Gastos en viajes nacionales ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 28
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "do por el equipo de Finanzas para conciliar los gastos reportados mediante \nel formulario FORM-X17. Cualquier discrepancia entre lo reservado en NovaTravel y lo reportado en el \nformulario de gastos debe aclararse antes de que proceda el reembolso correspondiente. \nLos colaboradores que viajen de manera frecuente por motivos de trabajo pueden solicitar a Recursos \nHumanos su inscripción en el programa interno de bienestar para viajeros frecuentes, el cual incluye \nrecomendaciones para la gestión",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 7,
+          "chunk_index": 38
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "e manera que los equipos puedan planear sus ausencias con suficiente tiempo. \n5. Gastos corporativos \nLos gastos corporativos se clasifican en dos categorías con reglas de reembolso distintas: gastos \ngenerados en viajes nacionales y gastos generados en viajes internacionales. Ambas categorías utilizan \nel mismo formulario de reembolso, identificado como FORM-X17, pero los plazos y los topes de gasto \ndifieren significativamente. \n5.1 Gastos en viajes nacionales ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 27
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": " NovaTravel. Las reservas realizadas fuera de esta plataforma no \nserán elegibles para reembolso, salvo casos de fuerza mayor debidamente documentados. \n6.1 Viajes nacionales (política TRV-115) \nLos viajes dentro del país deben reservarse con al menos 5 días hábiles de anticipación a la fecha de \nsalida. Para vuelos con duración menor a cuatro horas, la clase de viaje autorizada es económica; no se \nautorizan mejoras de clase salvo disponibilidad sin costo adicional otorgada por la aerolínea. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 34
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "El tope diario para alimentos en viajes nacionales es de 35 USD por día[[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "El tope diario para alimentos en viajes nacionales es de 35 USD por día[p. 6].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6
+        }
+      ],
+      "cited_pages": [
+        6
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q04",
+      "question": "¿Cuántas horas de capacitación anual son obligatorias para todo el personal?",
+      "expected_answer": "16 horas al año.",
+      "section": "14. Capacitación y desarrollo",
+      "expected_page": 12,
+      "evidence": "\"Todo empleado debe completar un mínimo de 16 horas de capacitación al año\"",
+      "difficulty": "Easy",
+      "category": "Direct",
+      "retrieved_pages": [
+        12,
+        13,
+        13,
+        12,
+        4,
+        7
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "pacitación al año, distribuidas entre cursos \ntécnicos, cursos de habilidades blandas y cursos regulatorios, según el plan de desarrollo acordado con \nsu gerente directo. \nDentro de estas 16 horas anuales, 4 horas corresponden obligatoriamente a capacitación en seguridad \nde la información, la cual debe completarse dentro del primer trimestre del año, coincidiendo con el \nreconocimiento anual de políticas descrito en la sección 7. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 12,
+          "chunk_index": 75
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "suman a las 16 horas generales aplicables a todo el \npersonal. Esta capacitación adicional busca fortalecer las competencias de gestión de desempeño y \ncomunicación efectiva dentro de los equipos. \nEl cumplimiento del plan de capacitación anual es uno de los criterios considerados en la evaluación de \ndesempeño de cada colaborador, la cual se realiza de manera semestral en conjunto entre el gerente \ndirecto y el propio colaborador, utilizando el formulario de evaluación disponible en el portal i",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 78
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "El personal de nuevo ingreso recibe adicionalmente un programa de inducción de 8 horas durante su \nprimera semana de trabajo, el cual cubre de manera introductoria los temas de horarios y asistencia, \nseguridad de la información y gestión de contraseñas. \nLos gerentes de equipo cuentan con un requisito adicional de 8 horas anuales de capacitación en \nliderazgo y gestión de personas, las cuales se suman a las 16 horas generales aplicables a todo el \npersonal. Esta capacitación adicional busca for",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 77
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "relación laboral con la compañía se \nconservan durante un periodo de cinco años a partir de la fecha de terminación, únicamente para fines \nlegales, fiscales y de defensa ante posibles reclamaciones, transcurrido el cual son eliminados de forma \nsegura conforme al procedimiento definido en la política DPO-500. \n14. Capacitación y desarrollo \nTodo empleado debe completar un mínimo de 16 horas de capacitación al año, distribuidas entre cursos \ntécnicos, cursos de habilidades blandas y cursos regul",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 12,
+          "chunk_index": 74
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "s simultáneos desde \nubicaciones geográficas distantes en un periodo corto de tiempo, es escalado automáticamente al \nequipo de Seguridad de la Información conforme al procedimiento descrito en la sección 9. \n4. Vacaciones y ausencias \nEl personal de tiempo completo dispone de veinte jornadas de descanso remunerado por año, las cuales \nse acumulan de manera proporcional durante los primeros doce meses de servicio y se otorgan de ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 20
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": " la información conforme a su nivel de clasificación, el cual \ndebe indicarse explícitamente en los documentos y correos electrónicos que la contengan. \nTodo el personal debe completar anualmente un reconocimiento formal de las políticas de seguridad de \nla información, disponible en la plataforma de capacitación descrita en la sección 14. La finalización de \neste reconocimiento es obligatoria dentro del primer trimestre del año. \nTodos los dispositivos corporativos, incluyendo laptops y teléfon",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 7,
+          "chunk_index": 40
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Todo el personal debe completar un mínimo de 16 horas de capacitación al año, distribuidas entre cursos técnicos, cursos de habilidades blandas y cursos regulatorios según el plan de desarrollo acordado con su gerente directo [[S1]][[S4]].",
+      "model_source_ids": [
+        "S1",
+        "S4"
+      ],
+      "answer": "Todo el personal debe completar un mínimo de 16 horas de capacitación al año, distribuidas entre cursos técnicos, cursos de habilidades blandas y cursos regulatorios según el plan de desarrollo acordado con su gerente directo [p. 12][p. 12].",
+      "validated_source_ids": [
+        "S1",
+        "S4"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 12
+        }
+      ],
+      "cited_pages": [
+        12
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q05",
+      "question": "¿Cuál es el monto del estipendio único que reciben los empleados remotos para su oficina en casa?",
+      "expected_answer": "300 USD.",
+      "section": "3. Trabajo remoto",
+      "expected_page": 4,
+      "evidence": "\"recibe un estipendio único de 300 USD para la configuración de su oficina en casa\"",
+      "difficulty": "Easy",
+      "category": "Direct",
+      "retrieved_pages": [
+        4,
+        4,
+        3,
+        3,
+        4,
+        3
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "r \ntrabajar de forma remota hasta tres días por semana, sujeto a la aprobación de su gerente directo y a \nlas necesidades operativas del equipo. \nTodo empleado que trabaje de forma remota, ya sea bajo el esquema híbrido o el esquema completo, \nrecibe un estipendio único de 300 USD para la configuración de su oficina en casa, incluyendo silla \nergonómica, monitor adicional o mobiliario de escritorio. \nEl acceso remoto a los sistemas internos de la compañía conlleva riesgos de seguridad que deben ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 16
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "Todo empleado de nuevo ingreso atraviesa un periodo de prueba correspondiente a los primeros 90 \ndías de empleo. Durante este periodo, el empleado puede trabajar de forma remota un máximo de un \ndía por semana, y dicho día debe ser acordado previamente con su gerente directo. \n3.2 Empleados confirmados \nUna vez concluido el periodo de prueba y confirmada la contratación, el empleado puede solicitar \ntrabajar de forma remota hasta tres días por semana, sujeto a la aprobación de su gerente directo",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 15
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "anipulación de los horarios registrados, se considera una falta grave sujeta al \nprocedimiento disciplinario descrito en la sección 15. El área de Recursos Humanos realiza auditorías \nperiódicas sobre los registros de asistencia como parte de sus controles internos habituales. \n3. Trabajo remoto \nNovaTech Solutions ofrece dos modalidades de trabajo a distancia: el esquema híbrido, disponible para \nla mayoría de los puestos, y el esquema de trabajo remoto completo, reservado para roles específico",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3,
+          "chunk_index": 13
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "\nla mayoría de los puestos, y el esquema de trabajo remoto completo, reservado para roles específicos \nque requieren aprobación expresa de un Vicepresidente de Área. \n3.1 Empleados en periodo de prueba ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3,
+          "chunk_index": 14
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "s simultáneos desde \nubicaciones geográficas distantes en un periodo corto de tiempo, es escalado automáticamente al \nequipo de Seguridad de la Información conforme al procedimiento descrito en la sección 9. \n4. Vacaciones y ausencias \nEl personal de tiempo completo dispone de veinte jornadas de descanso remunerado por año, las cuales \nse acumulan de manera proporcional durante los primeros doce meses de servicio y se otorgan de ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 20
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "izadas en días entre semana se \ncompensan al 1.5 veces la tarifa horaria ordinaria, mientras que las horas extra realizadas en sábado, \ndomingo o días festivos oficiales se compensan al doble (2x) de la tarifa horaria ordinaria. \nLos días festivos oficiales reconocidos por la compañía se publican al inicio de cada año en el portal \ninterno de Recursos Humanos y pueden variar ligeramente según el país donde se ubique cada oficina, \ndado que NovaTech Solutions respeta el calendario oficial de cada",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3,
+          "chunk_index": 11
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Los empleados que trabajan de forma remota reciben un estipendio único de 300 USD para la configuración de su oficina en casa, incluyendo silla ergonómica, monitor adicional o mobiliario de escritorio [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "Los empleados que trabajan de forma remota reciben un estipendio único de 300 USD para la configuración de su oficina en casa, incluyendo silla ergonómica, monitor adicional o mobiliario de escritorio [p. 4].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4
+        }
+      ],
+      "cited_pages": [
+        4
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q06",
+      "question": "¿Cuántos días de vacaciones al año recibe un empleado de tiempo completo?",
+      "expected_answer": "20 días (el manual lo describe como \"veinte jornadas de descanso remunerado por año\").",
+      "section": "4. Vacaciones y ausencias",
+      "expected_page": 4,
+      "evidence": "\"El personal de tiempo completo dispone de veinte jornadas de descanso remunerado por año\"",
+      "difficulty": "Medium",
+      "category": "Paraphrase",
+      "retrieved_pages": [
+        5,
+        5,
+        4,
+        5,
+        5,
+        5
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "manera completa a partir del segundo año de antigüedad. El personal de tiempo parcial recibe un \nnúmero de días proporcional a su jornada laboral contratada. \nLas solicitudes de vacaciones por periodos superiores a cinco días deben presentarse mediante el \nformulario FORM-B22 con al menos diez días hábiles de anticipación a la fecha de inicio solicitada. Las \nsolicitudes por periodos de cinco días o menos pueden presentarse con un mínimo de tres días hábiles \nde anticipación. \nDe los días de vac",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 22
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": " o menos pueden presentarse con un mínimo de tres días hábiles \nde anticipación. \nDe los días de vacaciones no utilizados al cierre del año, un máximo de cinco días puede trasladarse al \nejercicio siguiente; el resto de los días no utilizados se pierde el 31 de diciembre de cada año, salvo \nautorización expresa de Recursos Humanos por causas justificadas. \nEn materia de incapacidades por enfermedad, un empleado puede autocertificar hasta tres días \ncontinuos de ausencia por enfermedad sin necesi",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 23
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "s simultáneos desde \nubicaciones geográficas distantes en un periodo corto de tiempo, es escalado automáticamente al \nequipo de Seguridad de la Información conforme al procedimiento descrito en la sección 9. \n4. Vacaciones y ausencias \nEl personal de tiempo completo dispone de veinte jornadas de descanso remunerado por año, las cuales \nse acumulan de manera proporcional durante los primeros doce meses de servicio y se otorgan de ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 20
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": " a la legislación aplicable, y diez días de \nlicencia de paternidad para el otro progenitor. \nLas solicitudes de vacaciones se gestionan y aprueban dentro del mismo sistema TimeTrack Nova \nutilizado para el control de asistencia, lo cual permite a los gerentes visualizar de manera consolidada la \ndisponibilidad de su equipo antes de aprobar una solicitud. Ningún periodo vacacional se considera \nconfirmado hasta que el gerente directo haya aprobado formalmente la solicitud dentro del sistema. \nDu",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 25
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "nfirmado hasta que el gerente directo haya aprobado formalmente la solicitud dentro del sistema. \nDurante los periodos de mayor demanda operativa, definidos anualmente por cada Dirección de Área, \nse puede restringir temporalmente la aprobación de nuevas solicitudes de vacaciones. Estas \nrestricciones deben comunicarse con al menos treinta días de anticipación al inicio del periodo \nrestringido, de manera que los equipos puedan planear sus ausencias con suficiente tiempo. \n5. Gastos corporativos",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 26
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "d, un empleado puede autocertificar hasta tres días \ncontinuos de ausencia por enfermedad sin necesidad de presentar documentación médica. A partir del \ncuarto día, es obligatorio presentar una constancia médica que respalde la incapacidad. \nAdicionalmente, la compañía otorga cinco días de permiso remunerado por fallecimiento de un familiar \ndirecto, noventa días de licencia de maternidad conforme a la legislación aplicable, y diez días de \nlicencia de paternidad para el otro progenitor. \nLas so",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 24
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Un empleado de tiempo completo dispone de veinte jornadas de descanso remunerado por año [[source_id:S3]].",
+      "model_source_ids": [
+        "S3"
+      ],
+      "answer": "Un empleado de tiempo completo dispone de veinte jornadas de descanso remunerado por año. [p. 4]",
+      "validated_source_ids": [
+        "S3"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4
+        }
+      ],
+      "cited_pages": [
+        4
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q07",
+      "question": "¿Con cuánto tiempo de anticipación se debe reservar un viaje al extranjero?",
+      "expected_answer": "Al menos 10 días hábiles antes de la fecha de salida.",
+      "section": "6.2 Viajes internacionales (política TRV-220)",
+      "expected_page": 7,
+      "evidence": "\"Los viajes internacionales deben reservarse con al menos 10 días hábiles de anticipación\"",
+      "difficulty": "Medium",
+      "category": "Paraphrase",
+      "retrieved_pages": [
+        7,
+        6,
+        6,
+        5,
+        5,
+        6
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "6.2 Viajes internacionales (política TRV-220) \nLos viajes internacionales deben reservarse con al menos 10 días hábiles de anticipación. Para vuelos \ncon duración mayor a ocho horas, se autoriza la clase ejecutiva únicamente con la aprobación expresa \nde un Vicepresidente de Área. Todo viaje internacional requiere la contratación de un seguro de viaje \ncorporativo, gestionado automáticamente por NovaTravel al momento de la reserva. \nEn caso de cancelación de un viaje ya reservado, el empleado de",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 7,
+          "chunk_index": 36
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "erente directo. \n5.2 Gastos en viajes internacionales \nPara viajes fuera del país, el plazo para presentar el reporte de gastos se extiende a 15 días hábiles \nposteriores al regreso del viaje. El tope diario para alimentos en este caso es de 60 USD por día, y el tope \npor noche de hospedaje es de 200 USD. A diferencia de los gastos nacionales, los gastos internacionales \nrequieren la aprobación previa tanto del Director de Área como del equipo de Finanzas antes de que el \nviaje sea reservado. \nL",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 30
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": " NovaTravel. Las reservas realizadas fuera de esta plataforma no \nserán elegibles para reembolso, salvo casos de fuerza mayor debidamente documentados. \n6.1 Viajes nacionales (política TRV-115) \nLos viajes dentro del país deben reservarse con al menos 5 días hábiles de anticipación a la fecha de \nsalida. Para vuelos con duración menor a cuatro horas, la clase de viaje autorizada es económica; no se \nautorizan mejoras de clase salvo disponibilidad sin costo adicional otorgada por la aerolínea. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 34
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": " o menos pueden presentarse con un mínimo de tres días hábiles \nde anticipación. \nDe los días de vacaciones no utilizados al cierre del año, un máximo de cinco días puede trasladarse al \nejercicio siguiente; el resto de los días no utilizados se pierde el 31 de diciembre de cada año, salvo \nautorización expresa de Recursos Humanos por causas justificadas. \nEn materia de incapacidades por enfermedad, un empleado puede autocertificar hasta tres días \ncontinuos de ausencia por enfermedad sin necesi",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 23
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "nfirmado hasta que el gerente directo haya aprobado formalmente la solicitud dentro del sistema. \nDurante los periodos de mayor demanda operativa, definidos anualmente por cada Dirección de Área, \nse puede restringir temporalmente la aprobación de nuevas solicitudes de vacaciones. Estas \nrestricciones deben comunicarse con al menos treinta días de anticipación al inicio del periodo \nrestringido, de manera que los equipos puedan planear sus ausencias con suficiente tiempo. \n5. Gastos corporativos",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 26
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "Para viajes dentro del país, los empleados deben presentar su reporte de gastos, junto con los \ncomprobantes correspondientes, dentro de los siguientes 7 días hábiles posteriores a la fecha de \nregreso del viaje. El tope diario para alimentos en viajes nacionales es de 35 USD por día, y el tope por \nnoche de hospedaje es de 120 USD. La aprobación de estos gastos requiere únicamente la firma del \ngerente directo. \n5.2 Gastos en viajes internacionales \nPara viajes fuera del país, el plazo para pre",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 29
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Los viajes internacionales deben reservarse con al menos 10 días hábiles de anticipación [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "Los viajes internacionales deben reservarse con al menos 10 días hábiles de anticipación [p. 7].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 7
+        }
+      ],
+      "cited_pages": [
+        7
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q08",
+      "question": "¿Cuánto tiempo tiene un empleado para reportar sus gastos después de regresar de un viaje dentro del país?",
+      "expected_answer": "7 días hábiles.",
+      "section": "5.1 Gastos en viajes nacionales",
+      "expected_page": 6,
+      "evidence": "\"deben presentar su reporte de gastos... dentro de los siguientes 7 días hábiles posteriores a la fecha de regreso del viaje\"",
+      "difficulty": "Medium",
+      "category": "Paraphrase",
+      "retrieved_pages": [
+        6,
+        6,
+        7,
+        5,
+        6,
+        6
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "Para viajes dentro del país, los empleados deben presentar su reporte de gastos, junto con los \ncomprobantes correspondientes, dentro de los siguientes 7 días hábiles posteriores a la fecha de \nregreso del viaje. El tope diario para alimentos en viajes nacionales es de 35 USD por día, y el tope por \nnoche de hospedaje es de 120 USD. La aprobación de estos gastos requiere únicamente la firma del \ngerente directo. \n5.2 Gastos en viajes internacionales \nPara viajes fuera del país, el plazo para pre",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 29
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "erente directo. \n5.2 Gastos en viajes internacionales \nPara viajes fuera del país, el plazo para presentar el reporte de gastos se extiende a 15 días hábiles \nposteriores al regreso del viaje. El tope diario para alimentos en este caso es de 60 USD por día, y el tope \npor noche de hospedaje es de 200 USD. A diferencia de los gastos nacionales, los gastos internacionales \nrequieren la aprobación previa tanto del Director de Área como del equipo de Finanzas antes de que el \nviaje sea reservado. \nL",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 30
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "do por el equipo de Finanzas para conciliar los gastos reportados mediante \nel formulario FORM-X17. Cualquier discrepancia entre lo reservado en NovaTravel y lo reportado en el \nformulario de gastos debe aclararse antes de que proceda el reembolso correspondiente. \nLos colaboradores que viajen de manera frecuente por motivos de trabajo pueden solicitar a Recursos \nHumanos su inscripción en el programa interno de bienestar para viajeros frecuentes, el cual incluye \nrecomendaciones para la gestión",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 7,
+          "chunk_index": 38
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "e manera que los equipos puedan planear sus ausencias con suficiente tiempo. \n5. Gastos corporativos \nLos gastos corporativos se clasifican en dos categorías con reglas de reembolso distintas: gastos \ngenerados en viajes nacionales y gastos generados en viajes internacionales. Ambas categorías utilizan \nel mismo formulario de reembolso, identificado como FORM-X17, pero los plazos y los topes de gasto \ndifieren significativamente. \n5.1 Gastos en viajes nacionales ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 27
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "evia tanto del Director de Área como del equipo de Finanzas antes de que el \nviaje sea reservado. \nLos gastos que excedan los topes establecidos en cualquiera de las dos categorías deben justificarse por \nescrito y ser aprobados por el Director de Finanzas; de lo contrario, el excedente no será reembolsado al \nempleado. \nTodos los comprobantes presentados a través del formulario FORM-X17 deben estar a nombre de \nNovaTech Solutions o del propio empleado, y deben incluir el detalle del concepto, l",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 31
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "na del periodo inmediato siguiente a la \naprobación final por parte de Finanzas. Los gastos rechazados pueden apelarse una única vez ante el \nDirector de Finanzas, dentro de los cinco días hábiles posteriores a la notificación del rechazo. \n6. Viajes corporativos \nTodas las reservas de transporte y hospedaje relacionadas con viajes de negocio deben realizarse a \ntravés de la plataforma corporativa NovaTravel. Las reservas realizadas fuera de esta plataforma no \nserán elegibles para reembolso, sa",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 33
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Los empleados deben presentar su reporte de gastos, junto con los comprobantes correspondientes, dentro de los siguientes 7 días hábiles posteriores a la fecha de regreso del viaje para viajes dentro del país [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "Los empleados deben presentar su reporte de gastos, junto con los comprobantes correspondientes, dentro de los siguientes 7 días hábiles posteriores a la fecha de regreso del viaje para viajes dentro del país [p. 6].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6
+        }
+      ],
+      "cited_pages": [
+        6
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q09",
+      "question": "¿Cuál es la cantidad mínima de caracteres exigida para la contraseña de una cuenta de administrador?",
+      "expected_answer": "16 caracteres.",
+      "section": "8.2 Contraseñas administrativas (política SEC-104)",
+      "expected_page": 8,
+      "evidence": "\"Las contraseñas administrativas deben tener una longitud mínima de 16 caracteres\"",
+      "difficulty": "Medium",
+      "category": "Paraphrase",
+      "retrieved_pages": [
+        8,
+        8,
+        8,
+        9,
+        8,
+        8
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "número. Estas contraseñas deben \nrenovarse cada 90 días y no pueden reutilizar ninguna de las últimas cinco contraseñas empleadas. \n8.2 Contraseñas administrativas (política SEC-104) \nLas contraseñas administrativas deben tener una longitud mínima de 16 caracteres y deben renovarse \ncada 30 días. La autenticación multifactor (MFA) es obligatoria para toda cuenta administrativa, sin \nexcepción. Todas las credenciales administrativas deben almacenarse exclusivamente en la bóveda \ncorporativa NovaV",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 46
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "ón de contraseñas en NovaTech Solutions distingue entre credenciales de usuario estándar y \ncredenciales administrativas, dado que estas últimas otorgan acceso a sistemas críticos de la compañía. \n8.1 Contraseñas de usuario estándar \nLas contraseñas de las cuentas de usuario estándar deben tener una longitud mínima de 10 caracteres e \nincluir al menos una letra mayúscula, una letra minúscula y un número. Estas contraseñas deben \nrenovarse cada 90 días y no pueden reutilizar ninguna de las última",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 45
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "orrespondientes \nhasta que se regularice la situación. \nAdicionalmente, todo colaborador con acceso a sistemas de producción debe utilizar un administrador \nde contraseñas corporativo autorizado para el manejo de sus credenciales personales de trabajo. El uso \nde administradores de contraseñas no autorizados por el equipo de Tecnología está prohibido, dado que \nestas herramientas no cuentan con las integraciones de auditoría requeridas por la compañía. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 48
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "Las cuentas de servicio, es decir, las cuentas utilizadas por sistemas automatizados en lugar de personas, \nsiguen las mismas reglas aplicables a las contraseñas administrativas en cuanto a longitud mínima y \nalmacenamiento en NovaVault, pero están exentas del requisito de autenticación multifactor debido a \nsu naturaleza no interactiva. Cada cuenta de servicio debe tener un responsable humano asignado, \nregistrado dentro del propio NovaVault. \n9. Incidentes de seguridad \nNovaTech Solutions clas",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 50
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "as las credenciales administrativas deben almacenarse exclusivamente en la bóveda \ncorporativa NovaVault; queda prohibido anotarlas, compartirlas por correo electrónico o almacenarlas \nen archivos de texto plano. \nEl incumplimiento de la política SEC-104 por parte de un empleado con privilegios administrativos se \nconsidera una falta grave y puede derivar en la suspensión temporal de los accesos correspondientes \nhasta que se regularice la situación. \nAdicionalmente, todo colaborador con acceso ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 47
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": " \nexplícitamente para cada caso. \nEl equipo de Seguridad de la Información realiza campañas periódicas de phishing simulado como parte \nde la evaluación continua de la cultura de seguridad de la compañía. Los resultados individuales de estas \ncampañas no se utilizan con fines disciplinarios, sino que alimentan el plan de capacitación descrito en la \nsección 14. \n8. Gestión de contraseñas \nLa gestión de contraseñas en NovaTech Solutions distingue entre credenciales de usuario estándar y \ncredenci",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 44
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "La contraseña de una cuenta administrativa debe tener una longitud mínima de 16 caracteres [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "La contraseña de una cuenta administrativa debe tener una longitud mínima de 16 caracteres [p. 8].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8
+        }
+      ],
+      "cited_pages": [
+        8
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q10",
+      "question": "¿Con qué múltiplo se paga el tiempo extra trabajado en fin de semana?",
+      "expected_answer": "Al doble (2x) de la tarifa horaria ordinaria.",
+      "section": "2. Horarios y asistencia",
+      "expected_page": 3,
+      "evidence": "\"las horas extra realizadas en sábado, domingo o días festivos oficiales se compensan al doble (2x) de la tarifa horaria ordinaria\"",
+      "difficulty": "Medium",
+      "category": "Paraphrase",
+      "retrieved_pages": [
+        3,
+        3,
+        5,
+        4,
+        3,
+        4
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "izadas en días entre semana se \ncompensan al 1.5 veces la tarifa horaria ordinaria, mientras que las horas extra realizadas en sábado, \ndomingo o días festivos oficiales se compensan al doble (2x) de la tarifa horaria ordinaria. \nLos días festivos oficiales reconocidos por la compañía se publican al inicio de cada año en el portal \ninterno de Recursos Humanos y pueden variar ligeramente según el país donde se ubique cada oficina, \ndado que NovaTech Solutions respeta el calendario oficial de cada",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3,
+          "chunk_index": 11
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": " automáticamente en TimeTrack Nova. La acumulación de más \nde tres ausencias no justificadas en un periodo de treinta días calendario activa una revisión \ndisciplinaria, conforme a lo descrito en la sección 15 de este manual. \nEl tiempo extraordinario debe ser aprobado previamente por el gerente directo antes de ser trabajado; \nel tiempo extra no autorizado no será compensado. Las horas extra realizadas en días entre semana se \ncompensan al 1.5 veces la tarifa horaria ordinaria, mientras que las",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3,
+          "chunk_index": 10
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "manera completa a partir del segundo año de antigüedad. El personal de tiempo parcial recibe un \nnúmero de días proporcional a su jornada laboral contratada. \nLas solicitudes de vacaciones por periodos superiores a cinco días deben presentarse mediante el \nformulario FORM-B22 con al menos diez días hábiles de anticipación a la fecha de inicio solicitada. Las \nsolicitudes por periodos de cinco días o menos pueden presentarse con un mínimo de tres días hábiles \nde anticipación. \nDe los días de vac",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 22
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "s simultáneos desde \nubicaciones geográficas distantes en un periodo corto de tiempo, es escalado automáticamente al \nequipo de Seguridad de la Información conforme al procedimiento descrito en la sección 9. \n4. Vacaciones y ausencias \nEl personal de tiempo completo dispone de veinte jornadas de descanso remunerado por año, las cuales \nse acumulan de manera proporcional durante los primeros doce meses de servicio y se otorgan de ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 20
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "dos cuentan con flexibilidad para iniciar su jornada en cualquier momento entre las 7:30 y las \n9:30 horas, siempre que se complete la jornada de ocho horas efectivas de trabajo y se respete el \nhorario núcleo. El registro de entradas y salidas se realiza a través del sistema TimeTrack Nova, bajo el \nprocedimiento identificado internamente como ASIS-010. \nLas ausencias no justificadas se registran automáticamente en TimeTrack Nova. La acumulación de más \nde tres ausencias no justificadas en un p",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3,
+          "chunk_index": 9
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "r \ntrabajar de forma remota hasta tres días por semana, sujeto a la aprobación de su gerente directo y a \nlas necesidades operativas del equipo. \nTodo empleado que trabaje de forma remota, ya sea bajo el esquema híbrido o el esquema completo, \nrecibe un estipendio único de 300 USD para la configuración de su oficina en casa, incluyendo silla \nergonómica, monitor adicional o mobiliario de escritorio. \nEl acceso remoto a los sistemas internos de la compañía conlleva riesgos de seguridad que deben ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 16
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "El tiempo extra trabajado en sábados, domingos o días festivos oficiales se paga al doble (2x) de la tarifa horaria ordinaria [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "El tiempo extra trabajado en sábados, domingos o días festivos oficiales se paga al doble (2x) de la tarifa horaria ordinaria [p. 3].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3
+        }
+      ],
+      "cited_pages": [
+        3
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q11",
+      "question": "¿Cuál es el tope de gasto en hospedaje por noche en un viaje internacional?",
+      "expected_answer": "200 USD por noche (distinto de los 120 USD de los viajes nacionales).",
+      "section": "5.2 Gastos en viajes internacionales",
+      "expected_page": 6,
+      "evidence": "\"el tope por noche de hospedaje es de 200 USD\"",
+      "difficulty": "Hard",
+      "category": "Similar Sections",
+      "retrieved_pages": [
+        6,
+        6,
+        5,
+        7,
+        5,
+        6
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "Para viajes dentro del país, los empleados deben presentar su reporte de gastos, junto con los \ncomprobantes correspondientes, dentro de los siguientes 7 días hábiles posteriores a la fecha de \nregreso del viaje. El tope diario para alimentos en viajes nacionales es de 35 USD por día, y el tope por \nnoche de hospedaje es de 120 USD. La aprobación de estos gastos requiere únicamente la firma del \ngerente directo. \n5.2 Gastos en viajes internacionales \nPara viajes fuera del país, el plazo para pre",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 29
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "erente directo. \n5.2 Gastos en viajes internacionales \nPara viajes fuera del país, el plazo para presentar el reporte de gastos se extiende a 15 días hábiles \nposteriores al regreso del viaje. El tope diario para alimentos en este caso es de 60 USD por día, y el tope \npor noche de hospedaje es de 200 USD. A diferencia de los gastos nacionales, los gastos internacionales \nrequieren la aprobación previa tanto del Director de Área como del equipo de Finanzas antes de que el \nviaje sea reservado. \nL",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 30
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "sto \ndifieren significativamente. \n5.1 Gastos en viajes nacionales ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 28
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "do por el equipo de Finanzas para conciliar los gastos reportados mediante \nel formulario FORM-X17. Cualquier discrepancia entre lo reservado en NovaTravel y lo reportado en el \nformulario de gastos debe aclararse antes de que proceda el reembolso correspondiente. \nLos colaboradores que viajen de manera frecuente por motivos de trabajo pueden solicitar a Recursos \nHumanos su inscripción en el programa interno de bienestar para viajeros frecuentes, el cual incluye \nrecomendaciones para la gestión",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 7,
+          "chunk_index": 38
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "e manera que los equipos puedan planear sus ausencias con suficiente tiempo. \n5. Gastos corporativos \nLos gastos corporativos se clasifican en dos categorías con reglas de reembolso distintas: gastos \ngenerados en viajes nacionales y gastos generados en viajes internacionales. Ambas categorías utilizan \nel mismo formulario de reembolso, identificado como FORM-X17, pero los plazos y los topes de gasto \ndifieren significativamente. \n5.1 Gastos en viajes nacionales ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 27
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": " NovaTravel. Las reservas realizadas fuera de esta plataforma no \nserán elegibles para reembolso, salvo casos de fuerza mayor debidamente documentados. \n6.1 Viajes nacionales (política TRV-115) \nLos viajes dentro del país deben reservarse con al menos 5 días hábiles de anticipación a la fecha de \nsalida. Para vuelos con duración menor a cuatro horas, la clase de viaje autorizada es económica; no se \nautorizan mejoras de clase salvo disponibilidad sin costo adicional otorgada por la aerolínea. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 34
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "El tope por noche de hospedaje en un viaje internacional es de 200 USD [[S2]].",
+      "model_source_ids": [
+        "S2"
+      ],
+      "answer": "El tope por noche de hospedaje en un viaje internacional es de 200 USD [p. 6].",
+      "validated_source_ids": [
+        "S2"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6
+        }
+      ],
+      "cited_pages": [
+        6
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q12",
+      "question": "¿Cada cuántos días debe renovarse una contraseña administrativa?",
+      "expected_answer": "Cada 30 días (distinto de los 90 días de las contraseñas de usuario estándar).",
+      "section": "8.2 Contraseñas administrativas (política SEC-104)",
+      "expected_page": 8,
+      "evidence": "\"deben renovarse cada 30 días\"",
+      "difficulty": "Hard",
+      "category": "Similar Sections",
+      "retrieved_pages": [
+        8,
+        8,
+        8,
+        8,
+        13,
+        8
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "número. Estas contraseñas deben \nrenovarse cada 90 días y no pueden reutilizar ninguna de las últimas cinco contraseñas empleadas. \n8.2 Contraseñas administrativas (política SEC-104) \nLas contraseñas administrativas deben tener una longitud mínima de 16 caracteres y deben renovarse \ncada 30 días. La autenticación multifactor (MFA) es obligatoria para toda cuenta administrativa, sin \nexcepción. Todas las credenciales administrativas deben almacenarse exclusivamente en la bóveda \ncorporativa NovaV",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 46
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "orrespondientes \nhasta que se regularice la situación. \nAdicionalmente, todo colaborador con acceso a sistemas de producción debe utilizar un administrador \nde contraseñas corporativo autorizado para el manejo de sus credenciales personales de trabajo. El uso \nde administradores de contraseñas no autorizados por el equipo de Tecnología está prohibido, dado que \nestas herramientas no cuentan con las integraciones de auditoría requeridas por la compañía. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 48
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "ón de contraseñas en NovaTech Solutions distingue entre credenciales de usuario estándar y \ncredenciales administrativas, dado que estas últimas otorgan acceso a sistemas críticos de la compañía. \n8.1 Contraseñas de usuario estándar \nLas contraseñas de las cuentas de usuario estándar deben tener una longitud mínima de 10 caracteres e \nincluir al menos una letra mayúscula, una letra minúscula y un número. Estas contraseñas deben \nrenovarse cada 90 días y no pueden reutilizar ninguna de las última",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 45
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "as las credenciales administrativas deben almacenarse exclusivamente en la bóveda \ncorporativa NovaVault; queda prohibido anotarlas, compartirlas por correo electrónico o almacenarlas \nen archivos de texto plano. \nEl incumplimiento de la política SEC-104 por parte de un empleado con privilegios administrativos se \nconsidera una falta grave y puede derivar en la suspensión temporal de los accesos correspondientes \nhasta que se regularice la situación. \nAdicionalmente, todo colaborador con acceso ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 47
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "ro de las 24 horas \nsiguientes a la confirmación de la terminación laboral. El resto de los accesos, considerados no críticos, \ndeben revocarse dentro de un plazo de 72 horas a partir de la misma confirmación. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 82
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": " \nexplícitamente para cada caso. \nEl equipo de Seguridad de la Información realiza campañas periódicas de phishing simulado como parte \nde la evaluación continua de la cultura de seguridad de la compañía. Los resultados individuales de estas \ncampañas no se utilizan con fines disciplinarios, sino que alimentan el plan de capacitación descrito en la \nsección 14. \n8. Gestión de contraseñas \nLa gestión de contraseñas en NovaTech Solutions distingue entre credenciales de usuario estándar y \ncredenci",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 44
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Las contraseñas administrativas deben renovarse cada 30 días [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "Las contraseñas administrativas deben renovarse cada 30 días [p. 8].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8
+        }
+      ],
+      "cited_pages": [
+        8
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q13",
+      "question": "¿En qué plazo debe verificarse la integridad de un backup completo mediante una prueba de restauración?",
+      "expected_answer": "Dentro de las 72 horas posteriores a su ejecución.",
+      "section": "11.2 Backups completos",
+      "expected_page": 11,
+      "evidence": "\"debe validar la integridad de cada backup completo dentro de las 72 horas posteriores a su ejecución\"",
+      "difficulty": "Hard",
+      "category": "Similar Sections",
+      "retrieved_pages": [
+        11,
+        10,
+        11,
+        10,
+        16,
+        17
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "El equipo de Infraestructura debe validar la integridad de cada backup completo dentro de las 72 horas \nposteriores a su ejecución, mediante una prueba de restauración parcial en un entorno aislado. Los \nbackups completos se conservan durante 90 días en almacenamiento externo bajo el servicio NovaVault \nCloud antes de ser sobrescritos. \nTodos los respaldos, tanto incrementales como completos, se cifran antes de salir del centro de datos \nprimario de la compañía. Las llaves de cifrado utilizadas ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 63
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "desde el último respaldo. Estos respaldos se conservan durante un periodo de \nretención de 14 días antes de ser eliminados automáticamente del sistema. \n11.2 Backups completos \nLos backups completos se ejecutan cada domingo a las 02:00 horas y abarcan la totalidad de los \nsistemas críticos de la compañía, sin excepción. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 62
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "ifran antes de salir del centro de datos \nprimario de la compañía. Las llaves de cifrado utilizadas para los respaldos se gestionan de forma \nseparada del propio contenido respaldado, siguiendo el principio de separación de responsabilidades \nadoptado por el equipo de Infraestructura. \nEl equipo de Infraestructura realiza, adicionalmente al ejercicio de validación semanal, una prueba de \nrestauración completa a gran escala dos veces al año, en la cual se reconstruye un entorno completo a \npartir",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 64
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "staladas en cada dispositivo. \n11. Backups y continuidad de datos \nLa estrategia de respaldo de información de NovaTech Solutions combina respaldos incrementales y \nrespaldos completos, cada uno con una frecuencia, alcance y periodo de retención distintos. \n11.1 Backups incrementales \nLos backups incrementales se ejecutan diariamente a las 23:00 horas y capturan únicamente los \ncambios realizados desde el último respaldo. Estos respaldos se conservan durante un periodo de \nretención de 14 días a",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 61
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "ve): tiempo máximo aceptable para restablecer un sistema después de una \ninterrupción. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 16,
+          "chunk_index": 95
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "RPO (Recovery Point Objective): antigüedad máxima aceptable de los datos recuperados después de una \ninterrupción, medida desde el momento de la última copia de respaldo válida. \nAnexo C. Historial de revisiones \nVersión 1.0, publicada en marzo de 2019: primera edición del manual, cubriendo únicamente horarios, \nvacaciones y gastos corporativos. \nVersión 2.0, publicada en enero de 2022: se incorporaron las secciones de trabajo remoto, seguridad de \nla información y gestión de contraseñas, como r",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 17,
+          "chunk_index": 96
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "La integridad de cada backup completo debe ser validada dentro de las 72 horas posteriores a su ejecución mediante una prueba de restauración parcial en un entorno aislado [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "La integridad de cada backup completo debe ser validada dentro de las 72 horas posteriores a su ejecución mediante una prueba de restauración parcial en un entorno aislado [p. 11].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11
+        }
+      ],
+      "cited_pages": [
+        11
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q14",
+      "question": "¿Cuántos días a la semana puede trabajar remoto un empleado que ya terminó su periodo de prueba?",
+      "expected_answer": "Hasta 3 días por semana (distinto del máximo de 1 día durante el periodo de prueba).",
+      "section": "3.2 Empleados confirmados",
+      "expected_page": 4,
+      "evidence": "\"puede solicitar trabajar de forma remota hasta tres días por semana\"",
+      "difficulty": "Hard",
+      "category": "Similar Sections",
+      "retrieved_pages": [
+        4,
+        4,
+        3,
+        3,
+        5,
+        4
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "Todo empleado de nuevo ingreso atraviesa un periodo de prueba correspondiente a los primeros 90 \ndías de empleo. Durante este periodo, el empleado puede trabajar de forma remota un máximo de un \ndía por semana, y dicho día debe ser acordado previamente con su gerente directo. \n3.2 Empleados confirmados \nUna vez concluido el periodo de prueba y confirmada la contratación, el empleado puede solicitar \ntrabajar de forma remota hasta tres días por semana, sujeto a la aprobación de su gerente directo",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 15
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "r \ntrabajar de forma remota hasta tres días por semana, sujeto a la aprobación de su gerente directo y a \nlas necesidades operativas del equipo. \nTodo empleado que trabaje de forma remota, ya sea bajo el esquema híbrido o el esquema completo, \nrecibe un estipendio único de 300 USD para la configuración de su oficina en casa, incluyendo silla \nergonómica, monitor adicional o mobiliario de escritorio. \nEl acceso remoto a los sistemas internos de la compañía conlleva riesgos de seguridad que deben ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 16
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "anipulación de los horarios registrados, se considera una falta grave sujeta al \nprocedimiento disciplinario descrito en la sección 15. El área de Recursos Humanos realiza auditorías \nperiódicas sobre los registros de asistencia como parte de sus controles internos habituales. \n3. Trabajo remoto \nNovaTech Solutions ofrece dos modalidades de trabajo a distancia: el esquema híbrido, disponible para \nla mayoría de los puestos, y el esquema de trabajo remoto completo, reservado para roles específico",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3,
+          "chunk_index": 13
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "\nla mayoría de los puestos, y el esquema de trabajo remoto completo, reservado para roles específicos \nque requieren aprobación expresa de un Vicepresidente de Área. \n3.1 Empleados en periodo de prueba ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 3,
+          "chunk_index": 14
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": " o menos pueden presentarse con un mínimo de tres días hábiles \nde anticipación. \nDe los días de vacaciones no utilizados al cierre del año, un máximo de cinco días puede trasladarse al \nejercicio siguiente; el resto de los días no utilizados se pierde el 31 de diciembre de cada año, salvo \nautorización expresa de Recursos Humanos por causas justificadas. \nEn materia de incapacidades por enfermedad, un empleado puede autocertificar hasta tres días \ncontinuos de ausencia por enfermedad sin necesi",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 23
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "s simultáneos desde \nubicaciones geográficas distantes en un periodo corto de tiempo, es escalado automáticamente al \nequipo de Seguridad de la Información conforme al procedimiento descrito en la sección 9. \n4. Vacaciones y ausencias \nEl personal de tiempo completo dispone de veinte jornadas de descanso remunerado por año, las cuales \nse acumulan de manera proporcional durante los primeros doce meses de servicio y se otorgan de ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 20
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Un empleado que ya terminó su periodo de prueba puede solicitar trabajar de forma remota hasta tres días por semana, sujeto a la aprobación de su gerente directo y a las necesidades operativas del equipo [[S1]][[S2]].",
+      "model_source_ids": [
+        "S1",
+        "S2"
+      ],
+      "answer": "Un empleado que ya terminó su periodo de prueba puede solicitar trabajar de forma remota hasta tres días por semana, sujeto a la aprobación de su gerente directo y a las necesidades operativas del equipo [p. 4][p. 4].",
+      "validated_source_ids": [
+        "S1",
+        "S2"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4
+        }
+      ],
+      "cited_pages": [
+        4
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q15",
+      "question": "¿En cuánto tiempo debe notificarse al CISO un incidente de seguridad de severidad crítica?",
+      "expected_answer": "Dentro de los siguientes 15 minutos posteriores a la detección (distinto de las 24 horas para un incidente normal).",
+      "section": "9.2 Incidentes de severidad crítica (política SEC-110)",
+      "expected_page": 9,
+      "evidence": "\"deberá completarse dentro de los siguientes 15 minutos posteriores a la detección del incidente\"",
+      "difficulty": "Hard",
+      "category": "Similar Sections",
+      "retrieved_pages": [
+        9,
+        9,
+        9,
+        9,
+        12,
+        11
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "ca SEC-110) \nCuando ocurre un incidente de severidad crítica, el responsable deberá iniciar inmediatamente el \nprotocolo de escalamiento definido en la política SEC-110, sin esperar confirmación adicional ni \naprobación previa de su gerente directo. \nLa notificación al Chief Information Security Officer (CISO) deberá completarse dentro de los siguientes \n15 minutos posteriores a la detección del incidente, utilizando el canal de emergencia designado para tal \nfin. La demora en esta notificación ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 53
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "ncidente, utilizando el canal de emergencia designado para tal \nfin. La demora en esta notificación se considera en sí misma una infracción a la política SEC-110, \nindependientemente del resultado final del incidente. \nUna vez notificado, el CISO convoca al comité de respuesta a incidentes, integrado por representantes \nde Tecnología, Seguridad, Legal y Comunicación Corporativa. Este comité es responsable de coordinar la \ncontención del incidente, la comunicación interna y, cuando corresponda, l",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 54
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "a la operación de sistemas críticos \nni la confidencialidad de datos sensibles, como por ejemplo un intento de phishing detectado o un \ndispositivo con software desactualizado. Este tipo de incidentes debe reportarse al equipo de soporte \ntécnico dentro de las 24 horas siguientes a su detección, mediante la apertura de un ticket en el sistema \nNovaDesk. \n9.2 Incidentes de severidad crítica (política SEC-110) \nCuando ocurre un incidente de severidad crítica, el responsable deberá iniciar inmediat",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 52
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "ponsable de coordinar la \ncontención del incidente, la comunicación interna y, cuando corresponda, la comunicación con clientes \no autoridades regulatorias conforme a lo descrito en la sección 13. \nTodo incidente, sea normal o crítico, debe documentarse en NovaDesk con un reporte posterior al \nincidente (post-mortem) dentro de los cinco días hábiles siguientes a su resolución. Este reporte debe \nincluir la causa raíz identificada y las acciones correctivas propuestas para evitar su repetición. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 55
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "que comprometa datos personales, el incidente \ndebe notificarse a la autoridad regulatoria correspondiente dentro de un plazo de 72 horas a partir de su \nconfirmación, conforme a lo establecido en la política DPO-500. Esta notificación regulatoria es \nindependiente del proceso interno de gestión de incidentes descrito en la sección 9. \nNovaTech Solutions aplica el principio de minimización de datos en el diseño de sus productos y \nprocesos internos, recopilando únicamente la información personal",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 12,
+          "chunk_index": 72
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "los sistemas de la compañía. \nCuando el equipo de Seguridad realiza una solicitud de auditoría a un proveedor activo, el proveedor \ndebe responder formalmente a dicha solicitud dentro de un plazo de 48 horas. La falta de respuesta \ndentro de este plazo puede derivar en la suspensión temporal de los accesos otorgados al proveedor \nmientras se resuelve la situación. \nTodos los proveedores se clasifican según el nivel de riesgo que representan para la compañía, \nconsiderando el tipo de información ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 67
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Cuando ocurre un incidente de severidad crítica, la notificación al Chief Information Security Officer (CISO) deberá completarse dentro de los siguientes 15 minutos posteriores a la detección del incidente, utilizando el canal de emergencia designado para tal fin [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "Cuando ocurre un incidente de severidad crítica, la notificación al Chief Information Security Officer (CISO) deberá completarse dentro de los siguientes 15 minutos posteriores a la detección del incidente, utilizando el canal de emergencia designado para tal fin [p. 9].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9
+        }
+      ],
+      "cited_pages": [
+        9
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q16",
+      "question": "¿Qué debe hacer el responsable inmediatamente después de que ocurre un incidente de severidad crítica?",
+      "expected_answer": "Iniciar de inmediato el protocolo de escalamiento definido en la política SEC-110, sin esperar aprobación previa del gerente.",
+      "section": "9.2 Incidentes de severidad crítica (política SEC-110)",
+      "expected_page": 9,
+      "evidence": "\"el responsable deberá iniciar inmediatamente el protocolo de escalamiento definido en la política SEC-110\"",
+      "difficulty": "Hard",
+      "category": "Boundary Context",
+      "retrieved_pages": [
+        9,
+        9,
+        9,
+        9,
+        12,
+        14
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "ca SEC-110) \nCuando ocurre un incidente de severidad crítica, el responsable deberá iniciar inmediatamente el \nprotocolo de escalamiento definido en la política SEC-110, sin esperar confirmación adicional ni \naprobación previa de su gerente directo. \nLa notificación al Chief Information Security Officer (CISO) deberá completarse dentro de los siguientes \n15 minutos posteriores a la detección del incidente, utilizando el canal de emergencia designado para tal \nfin. La demora en esta notificación ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 53
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "ponsable de coordinar la \ncontención del incidente, la comunicación interna y, cuando corresponda, la comunicación con clientes \no autoridades regulatorias conforme a lo descrito en la sección 13. \nTodo incidente, sea normal o crítico, debe documentarse en NovaDesk con un reporte posterior al \nincidente (post-mortem) dentro de los cinco días hábiles siguientes a su resolución. Este reporte debe \nincluir la causa raíz identificada y las acciones correctivas propuestas para evitar su repetición. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 55
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "a la operación de sistemas críticos \nni la confidencialidad de datos sensibles, como por ejemplo un intento de phishing detectado o un \ndispositivo con software desactualizado. Este tipo de incidentes debe reportarse al equipo de soporte \ntécnico dentro de las 24 horas siguientes a su detección, mediante la apertura de un ticket en el sistema \nNovaDesk. \n9.2 Incidentes de severidad crítica (política SEC-110) \nCuando ocurre un incidente de severidad crítica, el responsable deberá iniciar inmediat",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 52
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "ncidente, utilizando el canal de emergencia designado para tal \nfin. La demora en esta notificación se considera en sí misma una infracción a la política SEC-110, \nindependientemente del resultado final del incidente. \nUna vez notificado, el CISO convoca al comité de respuesta a incidentes, integrado por representantes \nde Tecnología, Seguridad, Legal y Comunicación Corporativa. Este comité es responsable de coordinar la \ncontención del incidente, la comunicación interna y, cuando corresponda, l",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 54
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "que comprometa datos personales, el incidente \ndebe notificarse a la autoridad regulatoria correspondiente dentro de un plazo de 72 horas a partir de su \nconfirmación, conforme a lo establecido en la política DPO-500. Esta notificación regulatoria es \nindependiente del proceso interno de gestión de incidentes descrito en la sección 9. \nNovaTech Solutions aplica el principio de minimización de datos en el diseño de sus productos y \nprocesos internos, recopilando únicamente la información personal",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 12,
+          "chunk_index": 72
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "El área de Tecnología mantiene una lista actualizada de sistemas críticos sujeta a revisión trimestral por \nel comité de Seguridad de la Información. Un sistema se considera crítico cuando su indisponibilidad o el \nacceso no autorizado al mismo puede generar un impacto significativo en la operación, en la \ninformación de clientes o en el cumplimiento regulatorio de la compañía. \nRecursos Humanos realiza una entrevista de salida con todo colaborador que concluya su relación \nlaboral, ya sea de fo",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 14,
+          "chunk_index": 83
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "El responsable debe iniciar inmediatamente el protocolo de escalamiento definido en la política SEC-110, sin esperar confirmación adicional ni aprobación previa de su gerente directo. Además, debe notificar al Chief Information Security Officer (CISO) dentro de los siguientes 15 minutos posteriores a la detección del incidente, utilizando el canal de emergencia designado para tal fin. Esta notificación es obligatoria y cualquier demora se considera una infracción a la política SEC-110, independientemente del resultado del incidente [[S1]][[S3]][[S4]].",
+      "model_source_ids": [
+        "S1",
+        "S3",
+        "S4"
+      ],
+      "answer": "El responsable debe iniciar inmediatamente el protocolo de escalamiento definido en la política SEC-110, sin esperar confirmación adicional ni aprobación previa de su gerente directo. Además, debe notificar al Chief Information Security Officer (CISO) dentro de los siguientes 15 minutos posteriores a la detección del incidente, utilizando el canal de emergencia designado para tal fin. Esta notificación es obligatoria y cualquier demora se considera una infracción a la política SEC-110, independientemente del resultado del incidente [p. 9][p. 9][p. 9].",
+      "validated_source_ids": [
+        "S1",
+        "S3",
+        "S4"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9
+        }
+      ],
+      "cited_pages": [
+        9
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q17",
+      "question": "Después de ejecutar un backup completo, ¿qué debe hacer el equipo de Infraestructura y en cuánto tiempo?",
+      "expected_answer": "Validar la integridad del backup mediante una prueba de restauración parcial, dentro de las 72 horas posteriores a su ejecución.",
+      "section": "11.2 Backups completos",
+      "expected_page": 11,
+      "evidence": "\"El equipo de Infraestructura debe validar la integridad de cada backup completo dentro de las 72 horas posteriores a su ejecución, mediante una prueba de restauración parcial\"",
+      "difficulty": "Hard",
+      "category": "Boundary Context",
+      "retrieved_pages": [
+        11,
+        10,
+        11,
+        10,
+        14,
+        10
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "El equipo de Infraestructura debe validar la integridad de cada backup completo dentro de las 72 horas \nposteriores a su ejecución, mediante una prueba de restauración parcial en un entorno aislado. Los \nbackups completos se conservan durante 90 días en almacenamiento externo bajo el servicio NovaVault \nCloud antes de ser sobrescritos. \nTodos los respaldos, tanto incrementales como completos, se cifran antes de salir del centro de datos \nprimario de la compañía. Las llaves de cifrado utilizadas ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 63
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "desde el último respaldo. Estos respaldos se conservan durante un periodo de \nretención de 14 días antes de ser eliminados automáticamente del sistema. \n11.2 Backups completos \nLos backups completos se ejecutan cada domingo a las 02:00 horas y abarcan la totalidad de los \nsistemas críticos de la compañía, sin excepción. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 62
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "ifran antes de salir del centro de datos \nprimario de la compañía. Las llaves de cifrado utilizadas para los respaldos se gestionan de forma \nseparada del propio contenido respaldado, siguiendo el principio de separación de responsabilidades \nadoptado por el equipo de Infraestructura. \nEl equipo de Infraestructura realiza, adicionalmente al ejercicio de validación semanal, una prueba de \nrestauración completa a gran escala dos veces al año, en la cual se reconstruye un entorno completo a \npartir",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 64
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "staladas en cada dispositivo. \n11. Backups y continuidad de datos \nLa estrategia de respaldo de información de NovaTech Solutions combina respaldos incrementales y \nrespaldos completos, cada uno con una frecuencia, alcance y periodo de retención distintos. \n11.1 Backups incrementales \nLos backups incrementales se ejecutan diariamente a las 23:00 horas y capturan únicamente los \ncambios realizados desde el último respaldo. Estos respaldos se conservan durante un periodo de \nretención de 14 días a",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 61
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "ico, y cuenta con la infraestructura necesaria para reanudar las operaciones de los \nsistemas Tier 1 dentro del RTO establecido. \nEl comité de continuidad de negocio, integrado por representantes de Tecnología, Operaciones, \nRecursos Humanos y Comunicación Corporativa, se reúne de manera trimestral para revisar el estado de \nlos planes de recuperación y actualizar los objetivos de RTO y RPO conforme evoluciona la \ninfraestructura de la compañía. Cualquier cambio a estos objetivos debe documentar",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 14,
+          "chunk_index": 87
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "o el propósito de negocio de la herramienta solicitada. \nLos equipos corporativos son propiedad exclusiva de NovaTech Solutions y pueden ser inspeccionados \npor el equipo de Tecnología en cualquier momento, conforme a la política de uso aceptable firmada por \ncada colaborador al momento de su ingreso. Esta inspección puede realizarse de manera remota \nmediante las herramientas de administración instaladas en cada dispositivo. \n11. Backups y continuidad de datos \nLa estrategia de respaldo de info",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 60
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "El equipo de Infraestructura debe validar la integridad de cada backup completo mediante una prueba de restauración parcial en un entorno aislado, y esta validación debe realizarse dentro de las 72 horas posteriores a la ejecución del backup completo [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "El equipo de Infraestructura debe validar la integridad de cada backup completo mediante una prueba de restauración parcial en un entorno aislado, y esta validación debe realizarse dentro de las 72 horas posteriores a la ejecución del backup completo [p. 11].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11
+        }
+      ],
+      "cited_pages": [
+        11
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q18",
+      "question": "Cuando un empleado deja la compañía, ¿quién debe notificar a Recursos Humanos y cuándo?",
+      "expected_answer": "El gerente directo, el mismo día en que se confirme la salida del empleado.",
+      "section": "15.2 Terminación con causa",
+      "expected_page": 13,
+      "evidence": "\"el gerente directo deberá notificar formalmente al equipo de Recursos Humanos el mismo día en que se confirme la salida\"",
+      "difficulty": "Hard",
+      "category": "Boundary Context",
+      "retrieved_pages": [
+        13,
+        13,
+        13,
+        10,
+        14,
+        12
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "otificar formalmente al equipo de Recursos Humanos el mismo día en que se confirme \nla salida. \nRecursos Humanos deberá procesar la liquidación final y los documentos correspondientes dentro de un \nplazo máximo de 10 días hábiles a partir de la fecha de notificación. \n15.3 Revocación de accesos (política HR-045) \nLa política HR-045 establece que los accesos a sistemas críticos deben revocarse dentro de las 24 horas \nsiguientes a la confirmación de la terminación laboral. El resto de los accesos,",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 81
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "s Humanos. \n15.2 Terminación con causa \nCuando la relación laboral concluye con causa justificada, la terminación surte efecto de manera \ninmediata. El equipo de Seguridad de la Información debe ser notificado el mismo día para proceder con \nel bloqueo de accesos correspondiente. \nCuando un empleado es separado de la compañía, ya sea de forma voluntaria o involuntaria, el gerente \ndirecto deberá notificar formalmente al equipo de Recursos Humanos el mismo día en que se confirme \nla salida. \nRecu",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 80
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "e \ndirecto y el propio colaborador, utilizando el formulario de evaluación disponible en el portal interno de \nRecursos Humanos. \n15. Terminación de empleo \n15.1 Renuncia voluntaria \nTodo empleado que decida renunciar de forma voluntaria debe presentar su aviso por escrito con al \nmenos 30 días de anticipación a la fecha propuesta de salida, salvo acuerdo distinto con su gerente \ndirecto y Recursos Humanos. \n15.2 Terminación con causa \nCuando la relación laboral concluye con causa justificada, l",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 79
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "rlo al equipo de \nTecnología dentro de las 12 horas siguientes al momento en que se descubra la pérdida o el robo, \nindependientemente de la hora del día. Este reporte activa de manera automática el bloqueo remoto \ndel dispositivo y la revocación de sus credenciales asociadas. \nAl finalizar la relación laboral, el empleado debe devolver todo el equipo corporativo asignado dentro de \nlos 5 días hábiles posteriores a su último día de labores, salvo que Recursos Humanos indique un \nprocedimiento di",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 58
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "ealiza una entrevista de salida con todo colaborador que concluya su relación \nlaboral, ya sea de forma voluntaria o involuntaria, con el propósito de recabar retroalimentación sobre \nsu experiencia dentro de la compañía. Esta entrevista es opcional para el colaborador y no forma parte \nde los requisitos para el pago de la liquidación final. \n16. Continuidad de negocio \nEl Plan de Continuidad de Negocio de NovaTech Solutions clasifica los sistemas de la compañía en dos \nniveles según su criticid",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 14,
+          "chunk_index": 84
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "relación laboral con la compañía se \nconservan durante un periodo de cinco años a partir de la fecha de terminación, únicamente para fines \nlegales, fiscales y de defensa ante posibles reclamaciones, transcurrido el cual son eliminados de forma \nsegura conforme al procedimiento definido en la política DPO-500. \n14. Capacitación y desarrollo \nTodo empleado debe completar un mínimo de 16 horas de capacitación al año, distribuidas entre cursos \ntécnicos, cursos de habilidades blandas y cursos regul",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 12,
+          "chunk_index": 74
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Cuando un empleado es separado de la compañía, ya sea de forma voluntaria o involuntaria, el gerente directo debe notificar formalmente al equipo de Recursos Humanos el mismo día en que se confirme la salida [[S2]].",
+      "model_source_ids": [
+        "S2"
+      ],
+      "answer": "Cuando un empleado es separado de la compañía, ya sea de forma voluntaria o involuntaria, el gerente directo debe notificar formalmente al equipo de Recursos Humanos el mismo día en que se confirme la salida [p. 13].",
+      "validated_source_ids": [
+        "S2"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13
+        }
+      ],
+      "cited_pages": [
+        13
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q19",
+      "question": "¿Qué debe activar un empleado antes de acceder a los sistemas internos de la compañía cuando trabaja de forma remota?",
+      "expected_answer": "La VPN corporativa (requisito de la política REM-018).",
+      "section": "3. Trabajo remoto",
+      "expected_page": 4,
+      "evidence": "\"la VPN corporativa debe activarse obligatoriamente antes de acceder a cualquier sistema interno de la compañía\"",
+      "difficulty": "Medium",
+      "category": "Boundary Context",
+      "retrieved_pages": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        8
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "o. \nEl acceso remoto a los sistemas internos de la compañía conlleva riesgos de seguridad que deben \nmitigarse mediante el uso de conexiones cifradas. Ningún empleado debe conectarse a los sistemas \ncorporativos utilizando redes Wi-Fi públicas sin protección adicional. \nLa política REM-018 establece que la VPN corporativa debe activarse obligatoriamente antes de acceder \na cualquier sistema interno de la compañía, incluyendo el correo electrónico, los repositorios de código \ny las herramientas d",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 17
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "o de la compañía, incluyendo el correo electrónico, los repositorios de código \ny las herramientas de gestión de proyectos. El incumplimiento de esta activación se considera una \nviolación a la política de seguridad de la información descrita en la sección 7. \nLos espacios de trabajo remoto deben cumplir con condiciones mínimas de privacidad visual y auditiva \ncuando el colaborador participe en reuniones donde se discuta información confidencial o restringida. \nNo se permite trabajar desde espac",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 18
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "r \ntrabajar de forma remota hasta tres días por semana, sujeto a la aprobación de su gerente directo y a \nlas necesidades operativas del equipo. \nTodo empleado que trabaje de forma remota, ya sea bajo el esquema híbrido o el esquema completo, \nrecibe un estipendio único de 300 USD para la configuración de su oficina en casa, incluyendo silla \nergonómica, monitor adicional o mobiliario de escritorio. \nEl acceso remoto a los sistemas internos de la compañía conlleva riesgos de seguridad que deben ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 16
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "Todo empleado de nuevo ingreso atraviesa un periodo de prueba correspondiente a los primeros 90 \ndías de empleo. Durante este periodo, el empleado puede trabajar de forma remota un máximo de un \ndía por semana, y dicho día debe ser acordado previamente con su gerente directo. \n3.2 Empleados confirmados \nUna vez concluido el periodo de prueba y confirmada la contratación, el empleado puede solicitar \ntrabajar de forma remota hasta tres días por semana, sujeto a la aprobación de su gerente directo",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 15
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "uniones donde se discuta información confidencial o restringida. \nNo se permite trabajar desde espacios públicos compartidos, como cafeterías o salas de espera, cuando \nla actividad implique el manejo de dicha información. \nEl equipo de Tecnología realiza revisiones periódicas del estado de las conexiones remotas registradas \nen la VPN corporativa. Cualquier patrón de conexión inusual, como accesos simultáneos desde \nubicaciones geográficas distantes en un periodo corto de tiempo, es escalado au",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 19
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "orrespondientes \nhasta que se regularice la situación. \nAdicionalmente, todo colaborador con acceso a sistemas de producción debe utilizar un administrador \nde contraseñas corporativo autorizado para el manejo de sus credenciales personales de trabajo. El uso \nde administradores de contraseñas no autorizados por el equipo de Tecnología está prohibido, dado que \nestas herramientas no cuentan con las integraciones de auditoría requeridas por la compañía. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 48
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Un empleado debe activar obligatoriamente la VPN corporativa antes de acceder a cualquier sistema interno de la compañía cuando trabaja de forma remota, incluyendo el correo electrónico, repositorios de código y herramientas de gestión de proyectos.",
+      "model_source_ids": [
+        "S1",
+        "S2"
+      ],
+      "answer": "Un empleado debe activar obligatoriamente la VPN corporativa antes de acceder a cualquier sistema interno de la compañía cuando trabaja de forma remota, incluyendo el correo electrónico, repositorios de código y herramientas de gestión de proyectos. [p. 4] [p. 4]",
+      "validated_source_ids": [
+        "S1",
+        "S2"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4
+        }
+      ],
+      "cited_pages": [
+        4
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q20",
+      "question": "¿En cuántas horas deben revocarse los accesos a sistemas críticos después de que se confirma la terminación laboral de un empleado?",
+      "expected_answer": "24 horas (distinto de las 72 horas para accesos no críticos).",
+      "section": "15.3 Revocación de accesos (política HR-045)",
+      "expected_page": 13,
+      "evidence": "\"los accesos a sistemas críticos deben revocarse dentro de las 24 horas siguientes a la confirmación de la terminación laboral\"",
+      "difficulty": "Hard",
+      "category": "Numeric Confusion",
+      "retrieved_pages": [
+        13,
+        13,
+        14,
+        13,
+        10,
+        8
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "ro de las 24 horas \nsiguientes a la confirmación de la terminación laboral. El resto de los accesos, considerados no críticos, \ndeben revocarse dentro de un plazo de 72 horas a partir de la misma confirmación. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 82
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "otificar formalmente al equipo de Recursos Humanos el mismo día en que se confirme \nla salida. \nRecursos Humanos deberá procesar la liquidación final y los documentos correspondientes dentro de un \nplazo máximo de 10 días hábiles a partir de la fecha de notificación. \n15.3 Revocación de accesos (política HR-045) \nLa política HR-045 establece que los accesos a sistemas críticos deben revocarse dentro de las 24 horas \nsiguientes a la confirmación de la terminación laboral. El resto de los accesos,",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 81
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "El área de Tecnología mantiene una lista actualizada de sistemas críticos sujeta a revisión trimestral por \nel comité de Seguridad de la Información. Un sistema se considera crítico cuando su indisponibilidad o el \nacceso no autorizado al mismo puede generar un impacto significativo en la operación, en la \ninformación de clientes o en el cumplimiento regulatorio de la compañía. \nRecursos Humanos realiza una entrevista de salida con todo colaborador que concluya su relación \nlaboral, ya sea de fo",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 14,
+          "chunk_index": 83
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "s Humanos. \n15.2 Terminación con causa \nCuando la relación laboral concluye con causa justificada, la terminación surte efecto de manera \ninmediata. El equipo de Seguridad de la Información debe ser notificado el mismo día para proceder con \nel bloqueo de accesos correspondiente. \nCuando un empleado es separado de la compañía, ya sea de forma voluntaria o involuntaria, el gerente \ndirecto deberá notificar formalmente al equipo de Recursos Humanos el mismo día en que se confirme \nla salida. \nRecu",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13,
+          "chunk_index": 80
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "rlo al equipo de \nTecnología dentro de las 12 horas siguientes al momento en que se descubra la pérdida o el robo, \nindependientemente de la hora del día. Este reporte activa de manera automática el bloqueo remoto \ndel dispositivo y la revocación de sus credenciales asociadas. \nAl finalizar la relación laboral, el empleado debe devolver todo el equipo corporativo asignado dentro de \nlos 5 días hábiles posteriores a su último día de labores, salvo que Recursos Humanos indique un \nprocedimiento di",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 58
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "orrespondientes \nhasta que se regularice la situación. \nAdicionalmente, todo colaborador con acceso a sistemas de producción debe utilizar un administrador \nde contraseñas corporativo autorizado para el manejo de sus credenciales personales de trabajo. El uso \nde administradores de contraseñas no autorizados por el equipo de Tecnología está prohibido, dado que \nestas herramientas no cuentan con las integraciones de auditoría requeridas por la compañía. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 48
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Los accesos a sistemas críticos deben revocarse dentro de las 24 horas siguientes a la confirmación de la terminación laboral de un empleado [[S1]][[S2]].",
+      "model_source_ids": [
+        "S1",
+        "S2"
+      ],
+      "answer": "Los accesos a sistemas críticos deben revocarse dentro de las 24 horas siguientes a la confirmación de la terminación laboral de un empleado [p. 13][p. 13].",
+      "validated_source_ids": [
+        "S1",
+        "S2"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 13
+        }
+      ],
+      "cited_pages": [
+        13
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q21",
+      "question": "¿En cuántas horas debe responder un proveedor a una solicitud de auditoría de seguridad?",
+      "expected_answer": "48 horas.",
+      "section": "12. Proveedores y terceros",
+      "expected_page": 11,
+      "evidence": "\"el proveedor debe responder formalmente a dicha solicitud dentro de un plazo de 48 horas\"",
+      "difficulty": "Medium",
+      "category": "Numeric Confusion",
+      "retrieved_pages": [
+        11,
+        11,
+        11,
+        9,
+        9,
+        12
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "los sistemas de la compañía. \nCuando el equipo de Seguridad realiza una solicitud de auditoría a un proveedor activo, el proveedor \ndebe responder formalmente a dicha solicitud dentro de un plazo de 48 horas. La falta de respuesta \ndentro de este plazo puede derivar en la suspensión temporal de los accesos otorgados al proveedor \nmientras se resuelve la situación. \nTodos los proveedores se clasifican según el nivel de riesgo que representan para la compañía, \nconsiderando el tipo de información ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 67
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "cualquier actividad, un acuerdo de confidencialidad (NDA) y un acuerdo de tratamiento de \ndatos, conforme al procedimiento de incorporación de proveedores identificado como PROV-030. \nEl proceso de incorporación de un nuevo proveedor requiere la aprobación conjunta del equipo de \nAdquisiciones y del equipo de Seguridad de la Información antes de que el proveedor reciba cualquier \ntipo de acceso a los sistemas de la compañía. \nCuando el equipo de Seguridad realiza una solicitud de auditoría a un ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 66
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "can según el nivel de riesgo que representan para la compañía, \nconsiderando el tipo de información a la que tienen acceso y la criticidad del servicio que prestan. Los \nproveedores clasificados como de alto riesgo son sujetos a una revisión de seguridad anual obligatoria, \nmientras que los proveedores de riesgo bajo o medio son revisados cada dos años. \nEl área de Adquisiciones mantiene un directorio centralizado de todos los proveedores activos, \nincluyendo la fecha de su última revisión de se",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11,
+          "chunk_index": 68
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "ca SEC-110) \nCuando ocurre un incidente de severidad crítica, el responsable deberá iniciar inmediatamente el \nprotocolo de escalamiento definido en la política SEC-110, sin esperar confirmación adicional ni \naprobación previa de su gerente directo. \nLa notificación al Chief Information Security Officer (CISO) deberá completarse dentro de los siguientes \n15 minutos posteriores a la detección del incidente, utilizando el canal de emergencia designado para tal \nfin. La demora en esta notificación ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 53
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "a la operación de sistemas críticos \nni la confidencialidad de datos sensibles, como por ejemplo un intento de phishing detectado o un \ndispositivo con software desactualizado. Este tipo de incidentes debe reportarse al equipo de soporte \ntécnico dentro de las 24 horas siguientes a su detección, mediante la apertura de un ticket en el sistema \nNovaDesk. \n9.2 Incidentes de severidad crítica (política SEC-110) \nCuando ocurre un incidente de severidad crítica, el responsable deberá iniciar inmediat",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 52
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "os \npersonales de empleados como a los de clientes y usuarios finales de los productos de la compañía. \nToda solicitud de un titular de datos relacionada con el acceso, rectificación, cancelación u oposición al \ntratamiento de su información personal debe ser atendida y respondida dentro de un plazo de 20 días \nhábiles a partir de su recepción. \nEn caso de presentarse una vulneración de seguridad que comprometa datos personales, el incidente \ndebe notificarse a la autoridad regulatoria correspon",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 12,
+          "chunk_index": 71
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Un proveedor debe responder formalmente a una solicitud de auditoría de seguridad dentro de un plazo de 48 horas.",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "Un proveedor debe responder formalmente a una solicitud de auditoría de seguridad dentro de un plazo de 48 horas. [p. 11]",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 11
+        }
+      ],
+      "cited_pages": [
+        11
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q22",
+      "question": "¿Cuál es el RTO (Recovery Time Objective) para los sistemas Tier 1 según el plan de continuidad de negocio?",
+      "expected_answer": "4 horas (distinto de las 24 horas de los sistemas Tier 2).",
+      "section": "16.1 Sistemas Tier 1 (críticos)",
+      "expected_page": 14,
+      "evidence": "\"el objetivo de tiempo de recuperación (Recovery Time Objective, RTO) es de 4 horas\"",
+      "difficulty": "Hard",
+      "category": "Numeric Confusion",
+      "retrieved_pages": [
+        14,
+        14,
+        14,
+        17,
+        16,
+        10
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "egocio de NovaTech Solutions clasifica los sistemas de la compañía en dos \nniveles según su criticidad, cada uno con objetivos distintos de recuperación. \n16.1 Sistemas Tier 1 (críticos) \nPara los sistemas clasificados como Tier 1, el objetivo de tiempo de recuperación (Recovery Time \nObjective, RTO) es de 4 horas, y el objetivo de punto de recuperación (Recovery Point Objective, RPO) es \nde 1 hora. \n16.2 Sistemas Tier 2 \nPara los sistemas clasificados como Tier 2, el objetivo de tiempo de recup",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 14,
+          "chunk_index": 85
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "ico, y cuenta con la infraestructura necesaria para reanudar las operaciones de los \nsistemas Tier 1 dentro del RTO establecido. \nEl comité de continuidad de negocio, integrado por representantes de Tecnología, Operaciones, \nRecursos Humanos y Comunicación Corporativa, se reúne de manera trimestral para revisar el estado de \nlos planes de recuperación y actualizar los objetivos de RTO y RPO conforme evoluciona la \ninfraestructura de la compañía. Cualquier cambio a estos objetivos debe documentar",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 14,
+          "chunk_index": 87
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "a. \n16.2 Sistemas Tier 2 \nPara los sistemas clasificados como Tier 2, el objetivo de tiempo de recuperación es de 24 horas, y el \nobjetivo de punto de recuperación es de 4 horas. \nLa compañía realiza un simulacro anual obligatorio de continuidad de negocio, en el cual participan \ntodas las áreas críticas. El sitio alterno de operaciones de NovaTech Solutions se encuentra ubicado en \nQuerétaro, México, y cuenta con la infraestructura necesaria para reanudar las operaciones de los \nsistemas Tier 1",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 14,
+          "chunk_index": 86
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "RPO (Recovery Point Objective): antigüedad máxima aceptable de los datos recuperados después de una \ninterrupción, medida desde el momento de la última copia de respaldo válida. \nAnexo C. Historial de revisiones \nVersión 1.0, publicada en marzo de 2019: primera edición del manual, cubriendo únicamente horarios, \nvacaciones y gastos corporativos. \nVersión 2.0, publicada en enero de 2022: se incorporaron las secciones de trabajo remoto, seguridad de \nla información y gestión de contraseñas, como r",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 17,
+          "chunk_index": 96
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "ve): tiempo máximo aceptable para restablecer un sistema después de una \ninterrupción. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 16,
+          "chunk_index": 95
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "desde el último respaldo. Estos respaldos se conservan durante un periodo de \nretención de 14 días antes de ser eliminados automáticamente del sistema. \n11.2 Backups completos \nLos backups completos se ejecutan cada domingo a las 02:00 horas y abarcan la totalidad de los \nsistemas críticos de la compañía, sin excepción. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 10,
+          "chunk_index": 62
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "El objetivo de tiempo de recuperación (RTO) para los sistemas clasificados como Tier 1 es de 4 horas [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "El objetivo de tiempo de recuperación (RTO) para los sistemas clasificados como Tier 1 es de 4 horas [p. 14].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 14
+        }
+      ],
+      "cited_pages": [
+        14
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q23",
+      "question": "¿Qué formulario debe utilizarse para solicitar un periodo de vacaciones de más de cinco días?",
+      "expected_answer": "FORM-B22.",
+      "section": "4. Vacaciones y ausencias",
+      "expected_page": 5,
+      "evidence": "\"deben presentarse mediante el formulario FORM-B22 con al menos diez días hábiles de anticipación\"",
+      "difficulty": "Easy",
+      "category": "Exact Identifier",
+      "retrieved_pages": [
+        5,
+        5,
+        5,
+        5,
+        5,
+        4
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "manera completa a partir del segundo año de antigüedad. El personal de tiempo parcial recibe un \nnúmero de días proporcional a su jornada laboral contratada. \nLas solicitudes de vacaciones por periodos superiores a cinco días deben presentarse mediante el \nformulario FORM-B22 con al menos diez días hábiles de anticipación a la fecha de inicio solicitada. Las \nsolicitudes por periodos de cinco días o menos pueden presentarse con un mínimo de tres días hábiles \nde anticipación. \nDe los días de vac",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 22
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "nfirmado hasta que el gerente directo haya aprobado formalmente la solicitud dentro del sistema. \nDurante los periodos de mayor demanda operativa, definidos anualmente por cada Dirección de Área, \nse puede restringir temporalmente la aprobación de nuevas solicitudes de vacaciones. Estas \nrestricciones deben comunicarse con al menos treinta días de anticipación al inicio del periodo \nrestringido, de manera que los equipos puedan planear sus ausencias con suficiente tiempo. \n5. Gastos corporativos",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 26
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": " o menos pueden presentarse con un mínimo de tres días hábiles \nde anticipación. \nDe los días de vacaciones no utilizados al cierre del año, un máximo de cinco días puede trasladarse al \nejercicio siguiente; el resto de los días no utilizados se pierde el 31 de diciembre de cada año, salvo \nautorización expresa de Recursos Humanos por causas justificadas. \nEn materia de incapacidades por enfermedad, un empleado puede autocertificar hasta tres días \ncontinuos de ausencia por enfermedad sin necesi",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 23
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": " a la legislación aplicable, y diez días de \nlicencia de paternidad para el otro progenitor. \nLas solicitudes de vacaciones se gestionan y aprueban dentro del mismo sistema TimeTrack Nova \nutilizado para el control de asistencia, lo cual permite a los gerentes visualizar de manera consolidada la \ndisponibilidad de su equipo antes de aprobar una solicitud. Ningún periodo vacacional se considera \nconfirmado hasta que el gerente directo haya aprobado formalmente la solicitud dentro del sistema. \nDu",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 25
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "d, un empleado puede autocertificar hasta tres días \ncontinuos de ausencia por enfermedad sin necesidad de presentar documentación médica. A partir del \ncuarto día, es obligatorio presentar una constancia médica que respalde la incapacidad. \nAdicionalmente, la compañía otorga cinco días de permiso remunerado por fallecimiento de un familiar \ndirecto, noventa días de licencia de maternidad conforme a la legislación aplicable, y diez días de \nlicencia de paternidad para el otro progenitor. \nLas so",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 24
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "s simultáneos desde \nubicaciones geográficas distantes en un periodo corto de tiempo, es escalado automáticamente al \nequipo de Seguridad de la Información conforme al procedimiento descrito en la sección 9. \n4. Vacaciones y ausencias \nEl personal de tiempo completo dispone de veinte jornadas de descanso remunerado por año, las cuales \nse acumulan de manera proporcional durante los primeros doce meses de servicio y se otorgan de ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 4,
+          "chunk_index": 20
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "Para solicitar un periodo de vacaciones de más de cinco días debe utilizarse el formulario FORM-B22, el cual debe presentarse con al menos diez días hábiles de anticipación a la fecha de inicio solicitada [[S1]].",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "Para solicitar un periodo de vacaciones de más de cinco días debe utilizarse el formulario FORM-B22, el cual debe presentarse con al menos diez días hábiles de anticipación a la fecha de inicio solicitada [p. 5].",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5
+        }
+      ],
+      "cited_pages": [
+        5
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q24",
+      "question": "¿Qué código de política regula la longitud mínima y el almacenamiento de las contraseñas administrativas?",
+      "expected_answer": "SEC-104.",
+      "section": "8.2 Contraseñas administrativas (política SEC-104)",
+      "expected_page": 8,
+      "evidence": "\"Contraseñas administrativas (política SEC-104)\"",
+      "difficulty": "Easy",
+      "category": "Exact Identifier",
+      "retrieved_pages": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        9
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "número. Estas contraseñas deben \nrenovarse cada 90 días y no pueden reutilizar ninguna de las últimas cinco contraseñas empleadas. \n8.2 Contraseñas administrativas (política SEC-104) \nLas contraseñas administrativas deben tener una longitud mínima de 16 caracteres y deben renovarse \ncada 30 días. La autenticación multifactor (MFA) es obligatoria para toda cuenta administrativa, sin \nexcepción. Todas las credenciales administrativas deben almacenarse exclusivamente en la bóveda \ncorporativa NovaV",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 46
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "as las credenciales administrativas deben almacenarse exclusivamente en la bóveda \ncorporativa NovaVault; queda prohibido anotarlas, compartirlas por correo electrónico o almacenarlas \nen archivos de texto plano. \nEl incumplimiento de la política SEC-104 por parte de un empleado con privilegios administrativos se \nconsidera una falta grave y puede derivar en la suspensión temporal de los accesos correspondientes \nhasta que se regularice la situación. \nAdicionalmente, todo colaborador con acceso ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 47
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": "ón de contraseñas en NovaTech Solutions distingue entre credenciales de usuario estándar y \ncredenciales administrativas, dado que estas últimas otorgan acceso a sistemas críticos de la compañía. \n8.1 Contraseñas de usuario estándar \nLas contraseñas de las cuentas de usuario estándar deben tener una longitud mínima de 10 caracteres e \nincluir al menos una letra mayúscula, una letra minúscula y un número. Estas contraseñas deben \nrenovarse cada 90 días y no pueden reutilizar ninguna de las última",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 45
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "orrespondientes \nhasta que se regularice la situación. \nAdicionalmente, todo colaborador con acceso a sistemas de producción debe utilizar un administrador \nde contraseñas corporativo autorizado para el manejo de sus credenciales personales de trabajo. El uso \nde administradores de contraseñas no autorizados por el equipo de Tecnología está prohibido, dado que \nestas herramientas no cuentan con las integraciones de auditoría requeridas por la compañía. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 48
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": " \nexplícitamente para cada caso. \nEl equipo de Seguridad de la Información realiza campañas periódicas de phishing simulado como parte \nde la evaluación continua de la cultura de seguridad de la compañía. Los resultados individuales de estas \ncampañas no se utilizan con fines disciplinarios, sino que alimentan el plan de capacitación descrito en la \nsección 14. \n8. Gestión de contraseñas \nLa gestión de contraseñas en NovaTech Solutions distingue entre credenciales de usuario estándar y \ncredenci",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8,
+          "chunk_index": 44
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "Las cuentas de servicio, es decir, las cuentas utilizadas por sistemas automatizados en lugar de personas, \nsiguen las mismas reglas aplicables a las contraseñas administrativas en cuanto a longitud mínima y \nalmacenamiento en NovaVault, pero están exentas del requisito de autenticación multifactor debido a \nsu naturaleza no interactiva. Cada cuenta de servicio debe tener un responsable humano asignado, \nregistrado dentro del propio NovaVault. \n9. Incidentes de seguridad \nNovaTech Solutions clas",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 9,
+          "chunk_index": 50
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "La política que regula la longitud mínima y el almacenamiento de las contraseñas administrativas es la política SEC-104[[S1]][[S2]].",
+      "model_source_ids": [
+        "S1",
+        "S2"
+      ],
+      "answer": "La política que regula la longitud mínima y el almacenamiento de las contraseñas administrativas es la política SEC-104[p. 8][p. 8].",
+      "validated_source_ids": [
+        "S1",
+        "S2"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 8
+        }
+      ],
+      "cited_pages": [
+        8
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    },
+    {
+      "question_id": "Q25",
+      "question": "¿Qué código de política aplica específicamente a los viajes internacionales de la compañía?",
+      "expected_answer": "TRV-220.",
+      "section": "6.2 Viajes internacionales (política TRV-220)",
+      "expected_page": 7,
+      "evidence": "\"Viajes internacionales (política TRV-220)\"",
+      "difficulty": "Easy",
+      "category": "Exact Identifier",
+      "retrieved_pages": [
+        7,
+        7,
+        6,
+        17,
+        5,
+        6
+      ],
+      "retrieved_results": [
+        {
+          "rank": 1,
+          "source_id": "S1",
+          "text": "6.2 Viajes internacionales (política TRV-220) \nLos viajes internacionales deben reservarse con al menos 10 días hábiles de anticipación. Para vuelos \ncon duración mayor a ocho horas, se autoriza la clase ejecutiva únicamente con la aprobación expresa \nde un Vicepresidente de Área. Todo viaje internacional requiere la contratación de un seguro de viaje \ncorporativo, gestionado automáticamente por NovaTravel al momento de la reserva. \nEn caso de cancelación de un viaje ya reservado, el empleado de",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 7,
+          "chunk_index": 36
+        },
+        {
+          "rank": 2,
+          "source_id": "S2",
+          "text": "rama interno de bienestar para viajeros frecuentes, el cual incluye \nrecomendaciones para la gestión del cambio de husos horarios y el acceso a una línea de apoyo \npsicológico disponible las veinticuatro horas del día. \n7. Seguridad de la información \nLa información de la compañía se clasifica en cuatro niveles: pública, interna, confidencial y restringida. \nCada empleado es responsable de manejar la información conforme a su nivel de clasificación, el cual \ndebe indicarse explícitamente en los ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 7,
+          "chunk_index": 39
+        },
+        {
+          "rank": 3,
+          "source_id": "S3",
+          "text": " NovaTravel. Las reservas realizadas fuera de esta plataforma no \nserán elegibles para reembolso, salvo casos de fuerza mayor debidamente documentados. \n6.1 Viajes nacionales (política TRV-115) \nLos viajes dentro del país deben reservarse con al menos 5 días hábiles de anticipación a la fecha de \nsalida. Para vuelos con duración menor a cuatro horas, la clase de viaje autorizada es económica; no se \nautorizan mejoras de clase salvo disponibilidad sin costo adicional otorgada por la aerolínea. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 34
+        },
+        {
+          "rank": 4,
+          "source_id": "S4",
+          "text": "el área \nde Infraestructura y los nuevos requisitos regulatorios de la compañía. \nVersión 3.2, publicada en enero de 2026: actualización de los plazos de revocación de accesos descritos \nen la política HR-045 y ajuste menor a los topes de gastos en viajes internacionales descritos en la \nsección 5.2. Esta es la versión vigente al momento de la publicación de este documento. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 17,
+          "chunk_index": 98
+        },
+        {
+          "rank": 5,
+          "source_id": "S5",
+          "text": "e manera que los equipos puedan planear sus ausencias con suficiente tiempo. \n5. Gastos corporativos \nLos gastos corporativos se clasifican en dos categorías con reglas de reembolso distintas: gastos \ngenerados en viajes nacionales y gastos generados en viajes internacionales. Ambas categorías utilizan \nel mismo formulario de reembolso, identificado como FORM-X17, pero los plazos y los topes de gasto \ndifieren significativamente. \n5.1 Gastos en viajes nacionales ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 5,
+          "chunk_index": 27
+        },
+        {
+          "rank": 6,
+          "source_id": "S6",
+          "text": "e \nautorizan mejoras de clase salvo disponibilidad sin costo adicional otorgada por la aerolínea. ",
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 6,
+          "chunk_index": 35
+        }
+      ],
+      "retrieval_expected_page_hit": true,
+      "retrieval_evidence_hit": true,
+      "model_answer": "El código de política que aplica específicamente a los viajes internacionales de la compañía es TRV-220.",
+      "model_source_ids": [
+        "S1"
+      ],
+      "answer": "El código de política que aplica específicamente a los viajes internacionales de la compañía es TRV-220. [p. 7]",
+      "validated_source_ids": [
+        "S1"
+      ],
+      "sources": [
+        {
+          "filename": "NovaTech_Manual_Operativo.pdf",
+          "page_number": 7
+        }
+      ],
+      "cited_pages": [
+        7
+      ],
+      "citation_hit": true,
+      "failure_reason": null,
+      "retrieval_evidence_but_wrong_citation": false,
+      "generation_error": null
+    }
+  ]
+}

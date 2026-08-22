@@ -1,13 +1,20 @@
+import re
+
 from fastapi import APIRouter
 
 from app.models.message import DocumentQuestion, Message
-from app.services.openai_service import generate_response
+from app.services.openai_service import CitedAnswer, generate_cited_response
 from app.services.vector_db_service import (
     search_similar_chunks_with_metadata,
 )
 
 
 router = APIRouter()
+
+_MODEL_PAGE_CITATION = re.compile(r"\[p\.\s*\d+\]", re.IGNORECASE)
+_SOURCE_CITATION = re.compile(r"\[\[\s*(S\d+)\s*\]\]")
+_UNKNOWN_MARKER = re.compile(r"\[\[[^\[\]\n]+\]\]")
+_FINAL_PAGE_CITATION = re.compile(r"\[p\. (?P<page_number>\d+)\]")
 
 
 def _build_sources(results: list[dict]) -> list[dict]:
@@ -33,19 +40,112 @@ def _build_sources(results: list[dict]) -> list[dict]:
     return sources
 
 
+def _source_label(result: dict) -> str:
+    page_number = result["page_number"]
+
+    if isinstance(page_number, int):
+        return f"[p. {page_number}]"
+
+    return "[fuente sin página]"
+
+
+def _normalize_validated_citations(
+    answer: str,
+    cited_results: list[dict],
+) -> str:
+    validated_pages = {
+        result["page_number"]
+        for result in cited_results
+        if isinstance(result["page_number"], int)
+        and not isinstance(result["page_number"], bool)
+    }
+
+    def normalize_spacing(match: re.Match) -> str:
+        page_number = int(match.group("page_number"))
+
+        if page_number not in validated_pages:
+            return ""
+
+        citation = match.group(0)
+        if match.start() > 0 and not answer[match.start() - 1].isspace():
+            return f" {citation}"
+
+        return citation
+
+    answer = _FINAL_PAGE_CITATION.sub(normalize_spacing, answer)
+
+    for page_number in sorted(validated_pages):
+        citation = re.escape(f"[p. {page_number}]")
+        consecutive_duplicates = re.compile(
+            rf"({citation})(?:[ \t]*{citation})+"
+        )
+        answer = consecutive_duplicates.sub(r"\1", answer)
+
+    return answer
+
+
+def _map_citations(
+    generated: CitedAnswer,
+    results: list[dict],
+) -> tuple[str, list[dict]]:
+    results_by_id = {
+        result["source_id"]: result
+        for result in results
+    }
+    declared_ids = set(generated.source_ids)
+    used_ids: list[str] = []
+
+    # El modelo nunca es autoridad para los números de página.
+    answer = _MODEL_PAGE_CITATION.sub("", generated.answer)
+
+    def replace_marker(match: re.Match) -> str:
+        source_id = match.group(1)
+
+        if source_id not in declared_ids or source_id not in results_by_id:
+            return ""
+
+        if source_id not in used_ids:
+            used_ids.append(source_id)
+
+        return _source_label(results_by_id[source_id])
+
+    answer = _SOURCE_CITATION.sub(replace_marker, answer)
+    answer = _UNKNOWN_MARKER.sub("", answer)
+
+    # Si la salida estructurada declara una fuente válida pero omite su
+    # marcador, se conserva la cita al final sin aceptar IDs desconocidos.
+    for source_id in generated.source_ids:
+        if source_id not in results_by_id or source_id in used_ids:
+            continue
+
+        used_ids.append(source_id)
+        answer = f"{answer.rstrip()} {_source_label(results_by_id[source_id])}"
+
+    cited_results = [results_by_id[source_id] for source_id in used_ids]
+    answer = _normalize_validated_citations(answer, cited_results)
+    answer = re.sub(r"[ \t]+([.,;:!?])", r"\1", answer)
+    answer = re.sub(r"[ \t]{2,}", " ", answer).strip()
+
+    return answer, cited_results
+
+
+def _answer_question(question: str, results: list[dict]) -> tuple[str, list[dict]]:
+    generated = generate_cited_response(
+        question=question,
+        chunks=results,
+    )
+
+    return _map_citations(generated, results)
+
+
 @router.post("/chat")
 def chat_endpoint(message: Message):
     results = search_similar_chunks_with_metadata(message.message)
-    chunks = [result["text"] for result in results]
-
-    answer = generate_response(
-        message.message,
-        chunks,
-    )
+    answer, cited_results = _answer_question(message.message, results)
 
     return {
         "answer": answer,
-        "sources": _build_sources(results),
+        "sources": _build_sources(cited_results),
     }
 
 
@@ -57,15 +157,10 @@ def chat_with_document(request: DocumentQuestion):
         question=question,
         document_id=request.document_id,
     )
-    chunks = [result["text"] for result in results]
-
-    answer = generate_response(
-        question=question,
-        chunks=chunks,
-    )
+    answer, cited_results = _answer_question(question, results)
 
     return {
         "answer": answer,
         "document_id": request.document_id,
-        "sources": _build_sources(results),
+        "sources": _build_sources(cited_results),
     }
