@@ -2,6 +2,8 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+from app.services.openai_service import CitedAnswer
+
 
 def test_chat_endpoint_returns_generated_answer(
     client: TestClient,
@@ -23,30 +25,39 @@ def test_chat_endpoint_returns_generated_answer(
 
         return [
             {
+                "source_id": "S1",
                 "text": "Python fue creado por Guido van Rossum.",
                 "filename": "python.pdf",
                 "page_number": 2,
+                "chunk_index": 1,
             },
             {
+                "source_id": "S2",
                 "text": "La primera versión pública apareció en 1991.",
                 "filename": "python.pdf",
                 "page_number": 2,
+                "chunk_index": 2,
             },
             {
+                "source_id": "S3",
                 "text": "Python es un lenguaje interpretado.",
                 "filename": "historia.pdf",
                 "page_number": 5,
+                "chunk_index": 3,
             },
         ]
 
-    def fake_generate_response(
+    def fake_generate_cited_response(
         question: str,
-        chunks: list[str],
-    ) -> str:
+        chunks: list[dict],
+    ) -> CitedAnswer:
         received_data["generation_question"] = question
         received_data["generation_chunks"] = chunks
 
-        return "Respuesta simulada."
+        return CitedAnswer(
+            answer="Python fue creado por Guido van Rossum [[S1]].",
+            source_ids=["S1"],
+        )
 
     monkeypatch.setattr(
         "app.routers.chat.search_similar_chunks_with_metadata",
@@ -54,8 +65,8 @@ def test_chat_endpoint_returns_generated_answer(
     )
 
     monkeypatch.setattr(
-        "app.routers.chat.generate_response",
-        fake_generate_response,
+        "app.routers.chat.generate_cited_response",
+        fake_generate_cited_response,
     )
 
     request_body = {
@@ -69,15 +80,11 @@ def test_chat_endpoint_returns_generated_answer(
 
     assert response.status_code == 200
     assert response.json() == {
-        "answer": "Respuesta simulada.",
+        "answer": "Python fue creado por Guido van Rossum [p. 2].",
         "sources": [
             {
                 "filename": "python.pdf",
                 "page_number": 2,
-            },
-            {
-                "filename": "historia.pdf",
-                "page_number": 5,
             },
         ],
     }
@@ -85,11 +92,8 @@ def test_chat_endpoint_returns_generated_answer(
     assert received_data["search_question"] == "¿Quién creó Python?"
     assert received_data["generation_question"] == "¿Quién creó Python?"
 
-    assert received_data["generation_chunks"] == [
-        "Python fue creado por Guido van Rossum.",
-        "La primera versión pública apareció en 1991.",
-        "Python es un lenguaje interpretado.",
-    ]
+    assert received_data["generation_chunks"][0]["source_id"] == "S1"
+    assert received_data["generation_chunks"][0]["page_number"] == 2
 
 
 def test_chat_endpoint_returns_fallback_when_no_chunks_are_found(
@@ -107,13 +111,16 @@ def test_chat_endpoint_returns_fallback_when_no_chunks_are_found(
     ) -> list[dict]:
         return []
 
-    def fake_generate_response(
+    def fake_generate_cited_response(
         question: str,
-        chunks: list[str],
-    ) -> str:
+        chunks: list[dict],
+    ) -> CitedAnswer:
         assert chunks == []
 
-        return "No se encontró información relevante en los documentos."
+        return CitedAnswer(
+            answer="No se encontró información relevante en los documentos.",
+            source_ids=[],
+        )
 
     monkeypatch.setattr(
         "app.routers.chat.search_similar_chunks_with_metadata",
@@ -121,8 +128,8 @@ def test_chat_endpoint_returns_fallback_when_no_chunks_are_found(
     )
 
     monkeypatch.setattr(
-        "app.routers.chat.generate_response",
-        fake_generate_response,
+        "app.routers.chat.generate_cited_response",
+        fake_generate_cited_response,
     )
 
     response = client.post(
@@ -155,26 +162,31 @@ def test_document_chat_returns_sources_and_text_only_context(
 
         return [
             {
+                "source_id": "S1",
                 "text": "Contenido del documento antiguo.",
                 "filename": "antiguo.pdf",
                 "page_number": None,
+                "chunk_index": None,
             }
         ]
 
-    def fake_generate_response(
+    def fake_generate_cited_response(
         question: str,
-        chunks: list[str],
-    ) -> str:
+        chunks: list[dict],
+    ) -> CitedAnswer:
         received_data["generation_chunks"] = chunks
-        return "Respuesta del documento."
+        return CitedAnswer(
+            answer="Respuesta del documento [[S1]].",
+            source_ids=["S1"],
+        )
 
     monkeypatch.setattr(
         "app.routers.chat.search_similar_chunks_with_metadata",
         fake_search_similar_chunks_with_metadata,
     )
     monkeypatch.setattr(
-        "app.routers.chat.generate_response",
-        fake_generate_response,
+        "app.routers.chat.generate_cited_response",
+        fake_generate_cited_response,
     )
 
     response = client.post(
@@ -187,7 +199,7 @@ def test_document_chat_returns_sources_and_text_only_context(
 
     assert response.status_code == 200
     assert response.json() == {
-        "answer": "Respuesta del documento.",
+        "answer": "Respuesta del documento [fuente sin página].",
         "document_id": "documento-1",
         "sources": [
             {
@@ -198,8 +210,128 @@ def test_document_chat_returns_sources_and_text_only_context(
     }
     assert received_data["search_document_id"] == "documento-1"
     assert received_data["generation_chunks"] == [
-        "Contenido del documento antiguo."
+        {
+            "source_id": "S1",
+            "text": "Contenido del documento antiguo.",
+            "filename": "antiguo.pdf",
+            "page_number": None,
+            "chunk_index": None,
+        }
     ]
+
+
+def test_chat_discards_invented_ids_and_model_page_numbers(
+    client: TestClient,
+    monkeypatch: Any,
+) -> None:
+    results = [
+        {
+            "source_id": "S1",
+            "text": "El empleado debe avisar con 30 días de anticipación.",
+            "filename": "reglamento.pdf",
+            "page_number": 13,
+            "chunk_index": 81,
+        }
+    ]
+
+    monkeypatch.setattr(
+        "app.routers.chat.search_similar_chunks_with_metadata",
+        lambda question, n_results=6: results,
+    )
+    monkeypatch.setattr(
+        "app.routers.chat.generate_cited_response",
+        lambda question, chunks: CitedAnswer(
+            answer=(
+                "El empleado debe avisar con 30 días [p. 999] [[S999]] "
+                "de anticipación [[S1]]."
+            ),
+            source_ids=["S999", "S1"],
+        ),
+    )
+
+    response = client.post(
+        "/chat",
+        json={"message": "¿Cuándo debe avisar?"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "answer": (
+            "El empleado debe avisar con 30 días de anticipación [p. 13]."
+        ),
+        "sources": [
+            {
+                "filename": "reglamento.pdf",
+                "page_number": 13,
+            }
+        ],
+    }
+
+
+def test_chat_normalizes_only_validated_citation_format(
+    client: TestClient,
+    monkeypatch: Any,
+) -> None:
+    results = [
+        {
+            "source_id": "S1",
+            "text": "Primera fuente.",
+            "filename": "manual.pdf",
+            "page_number": 6,
+            "chunk_index": 1,
+        },
+        {
+            "source_id": "S2",
+            "text": "Segunda fuente.",
+            "filename": "manual.pdf",
+            "page_number": 12,
+            "chunk_index": 2,
+        },
+        {
+            "source_id": "S3",
+            "text": "Tercera fuente de la misma página.",
+            "filename": "manual.pdf",
+            "page_number": 12,
+            "chunk_index": 3,
+        },
+        {
+            "source_id": "S4",
+            "text": "Fuente de una página distinta.",
+            "filename": "manual.pdf",
+            "page_number": 13,
+            "chunk_index": 4,
+        },
+    ]
+
+    monkeypatch.setattr(
+        "app.routers.chat.search_similar_chunks_with_metadata",
+        lambda question, n_results=6: results,
+    )
+    monkeypatch.setattr(
+        "app.routers.chat.generate_cited_response",
+        lambda question, chunks: CitedAnswer(
+            answer=(
+                "Se concede un día[[S1]]. "
+                "La regla adicional [[S2]][[S3]][[S4]]."
+            ),
+            source_ids=["S1", "S2", "S3", "S4"],
+        ),
+    )
+
+    response = client.post("/chat", json={"message": "Pregunta"})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "answer": (
+            "Se concede un día [p. 6]. "
+            "La regla adicional [p. 12] [p. 13]."
+        ),
+        "sources": [
+            {"filename": "manual.pdf", "page_number": 6},
+            {"filename": "manual.pdf", "page_number": 12},
+            {"filename": "manual.pdf", "page_number": 13},
+        ],
+    }
 
 
 def test_chat_endpoint_rejects_missing_message(

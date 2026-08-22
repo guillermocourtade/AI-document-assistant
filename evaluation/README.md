@@ -80,3 +80,25 @@ Answers are marked `UNCHANGED` only when they are exactly equal after whitespace
 normalization. The complete answers, retrieval metadata, context sizes, errors,
 and generation timings are written to
 `results/generation_top4_vs_top6.json`.
+
+## End-to-end citation evaluation
+
+Run the citation benchmark with:
+
+```bash
+python -m evaluation.evaluate_citations
+```
+
+This evaluator reuses the same 25-question Ground Truth and isolated benchmark
+ingestion. For every question it runs production retrieval, structured answer
+generation, and the router's source-ID validation/page mapping. A Citation Hit
+means that at least one final cited page equals `expected_page`. The report also
+checks whether the exact Ground Truth evidence was present in a chunk sent to
+generation; a citation miss is classified separately as
+`llm_cited_other_source` when that evidence was available but the final answer
+cited only other pages.
+
+The complete retrieval context, raw model source IDs, validated source IDs,
+final answer, final sources, failure diagnostics, and aggregate metrics are
+written to `results/citation_results.json`. The persisted `./chroma_db` is not
+used or modified.

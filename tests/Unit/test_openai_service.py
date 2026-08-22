@@ -1,4 +1,14 @@
-from app.services.openai_service import build_context
+import json
+from types import SimpleNamespace
+
+from app.services.openai_service import (
+    CitedAnswer,
+    build_citation_context,
+    build_context,
+    generate_cited_response,
+    generate_embedding,
+    generate_response,
+)
 
 
 def test_build_context_formats_chunks():
@@ -13,10 +23,53 @@ def test_build_context_formats_chunks():
     assert "Fragmento 1:\nPrimer fragmento" in context
     assert "Fragmento 2:\nSegundo fragmento" in context
 
-from app.services.openai_service import (
-    build_context,
-    generate_response,
-)
+
+def test_build_citation_context_sends_ids_and_text_without_page_numbers():
+    context = build_citation_context(
+        [
+            {
+                "source_id": "S1",
+                "text": "El aviso debe darse con anticipación.",
+                "filename": "manual.pdf",
+                "page_number": 13,
+                "chunk_index": 81,
+            }
+        ]
+    )
+
+    assert json.loads(context) == [
+        {
+            "source_id": "S1",
+            "content": "El aviso debe darse con anticipación.",
+        }
+    ]
+
+
+def test_generate_cited_response_uses_structured_output(monkeypatch):
+    received_data = {}
+    parsed = CitedAnswer(
+        answer="Debe avisar con 30 días de anticipación [[S1]].",
+        source_ids=["S1"],
+    )
+
+    def fake_parse(**kwargs):
+        received_data.update(kwargs)
+        return SimpleNamespace(output_parsed=parsed)
+
+    monkeypatch.setattr(
+        "app.services.openai_service.client.responses.parse",
+        fake_parse,
+    )
+
+    result = generate_cited_response(
+        question="¿Con cuánta anticipación?",
+        chunks=[{"source_id": "S1", "text": "Debe avisar con 30 días."}],
+    )
+
+    assert result == parsed
+    assert received_data["text_format"] is CitedAnswer
+    assert '"source_id": "S1"' in received_data["input"]
+    assert "no escribas números" in received_data["input"]
 
 
 def test_generate_response_without_chunks_does_not_call_openai(
@@ -42,9 +95,26 @@ def test_generate_response_without_chunks_does_not_call_openai(
         "en los documentos."
     )
 
-from types import SimpleNamespace
 
-from app.services.openai_service import generate_embedding
+def test_generate_cited_response_without_chunks_does_not_call_openai(
+    monkeypatch,
+):
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError(
+            "OpenAI no debería llamarse cuando chunks está vacío."
+        )
+
+    monkeypatch.setattr(
+        "app.services.openai_service.client.responses.parse",
+        fail_if_called,
+    )
+
+    result = generate_cited_response(question="Pregunta", chunks=[])
+
+    assert result == CitedAnswer(
+        answer="No se encontró información relevante en los documentos.",
+        source_ids=[],
+    )
 
 
 def test_generate_embedding_returns_vector(
