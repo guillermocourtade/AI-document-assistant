@@ -1,8 +1,10 @@
 import re
+from time import perf_counter
 
 from fastapi import APIRouter
 
 from app.models.message import DocumentQuestion, Message
+from app.observability import RagObservation, observe_rag_request
 from app.services.openai_service import CitedAnswer, generate_cited_response
 from app.services.vector_db_service import (
     search_similar_chunks_with_metadata,
@@ -138,10 +140,66 @@ def _answer_question(question: str, results: list[dict]) -> tuple[str, list[dict
     return _map_citations(generated, results)
 
 
+def _run_rag(
+    *,
+    question: str,
+    endpoint: str,
+    document_id: str | None = None,
+) -> tuple[str, list[dict]]:
+    with observe_rag_request(endpoint) as observation:
+        results = _retrieve_chunks(
+            question=question,
+            document_id=document_id,
+            observation=observation,
+        )
+        answer, cited_results = _answer_question(question, results)
+        observation.cited_source_ids = [
+            result["source_id"] for result in cited_results
+        ]
+        observation.cited_pages = list(
+            dict.fromkeys(
+                result["page_number"]
+                for result in cited_results
+                if isinstance(result["page_number"], int)
+                and not isinstance(result["page_number"], bool)
+            )
+        )
+
+        return answer, cited_results
+
+
+def _retrieve_chunks(
+    *,
+    question: str,
+    document_id: str | None,
+    observation: RagObservation,
+) -> list[dict]:
+    started_at = perf_counter()
+
+    try:
+        if document_id is None:
+            results = search_similar_chunks_with_metadata(question)
+        else:
+            results = search_similar_chunks_with_metadata(
+                question=question,
+                document_id=document_id,
+            )
+    finally:
+        observation.retrieval_latency_ms = round(
+            (perf_counter() - started_at) * 1000,
+            3,
+        )
+
+    observation.chunks_retrieved = len(results)
+    return results
+
+
 @router.post("/chat")
 def chat_endpoint(message: Message):
-    results = search_similar_chunks_with_metadata(message.message)
-    answer, cited_results = _answer_question(message.message, results)
+    answer, cited_results = _run_rag(
+        question=message.message,
+        endpoint="/chat",
+    )
 
     return {
         "answer": answer,
@@ -152,12 +210,11 @@ def chat_endpoint(message: Message):
 @router.post("/chat/document")
 def chat_with_document(request: DocumentQuestion):
     question = request.message
-
-    results = search_similar_chunks_with_metadata(
+    answer, cited_results = _run_rag(
         question=question,
+        endpoint="/chat/document",
         document_id=request.document_id,
     )
-    answer, cited_results = _answer_question(question, results)
 
     return {
         "answer": answer,
