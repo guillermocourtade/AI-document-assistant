@@ -102,3 +102,30 @@ The complete retrieval context, raw model source IDs, validated source IDs,
 final answer, final sources, failure diagnostics, and aggregate metrics are
 written to `results/citation_results.json`. The persisted `./chroma_db` is not
 used or modified.
+
+## RAG latency benchmark
+
+Run the end-to-end latency benchmark with:
+
+```bash
+python -m evaluation.benchmark_latency
+```
+
+The benchmark ingests the evaluation PDF into a temporary ChromaDB and sends
+all 25 Ground Truth questions to the production `/chat/document` endpoint. It
+captures the existing `rag_request_completed` structured log event, so retrieval
+and OpenAI generation are not timed a second time. Questions, chunks, answers,
+and API credentials are never written to the report.
+
+The JSON report is stored at `results/latency_benchmark.json`. It contains the
+per-request latency/token fields, average, median/p50, nearest-rank p95, minimum,
+maximum, aggregate retrieval/generation shares, and total-latency outliers using
+the `Q3 + 1.5 * IQR` rule. With the default 25-request sample, p95 is determined
+by only the slowest few observations and must be treated as directional.
+
+To run a reproducible subset or repeat each question:
+
+```bash
+python -m evaluation.benchmark_latency --question-ids Q01,Q06,Q11,Q16,Q20,Q23
+python -m evaluation.benchmark_latency --repetitions 2
+```
