@@ -9,6 +9,7 @@ from app.services.openai_service import (
     generate_embedding,
     generate_response,
 )
+from app.observability import observe_rag_request
 
 
 def test_build_context_formats_chunks():
@@ -145,4 +146,39 @@ def test_generate_embedding_returns_vector(
         isinstance(value, float)
         for value in embedding
     )
+
+
+def test_generate_cited_response_records_model_usage_and_latency(monkeypatch):
+    parsed = CitedAnswer(answer="Respuesta [[S1]].", source_ids=["S1"])
+    fake_response = SimpleNamespace(
+        output_parsed=parsed,
+        model="gpt-4.1-mini-2026-01-01",
+        usage=SimpleNamespace(input_tokens=120, output_tokens=30),
+    )
+    times = iter([5.0, 5.075])
+
+    monkeypatch.setattr(
+        "app.services.openai_service.client.responses.parse",
+        lambda **kwargs: fake_response,
+    )
+    monkeypatch.setattr(
+        "app.services.openai_service.perf_counter",
+        lambda: next(times),
+    )
+    monkeypatch.setattr(
+        "app.observability.log_event",
+        lambda event, **fields: None,
+    )
+
+    with observe_rag_request("/chat") as observation:
+        result = generate_cited_response(
+            question="Pregunta",
+            chunks=[{"source_id": "S1", "text": "Contenido"}],
+        )
+
+        assert result == parsed
+        assert observation.openai_generation_latency_ms == 75.0
+        assert observation.model == "gpt-4.1-mini-2026-01-01"
+        assert observation.input_tokens == 120
+        assert observation.output_tokens == 30
 

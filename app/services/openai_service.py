@@ -1,4 +1,5 @@
 import json
+from time import perf_counter
 
 from openai import OpenAI, OpenAIError
 from pydantic import BaseModel, Field
@@ -6,9 +7,11 @@ from pydantic import BaseModel, Field
 from app.config import OPENAI_API_KEY
 from app.exceptions.custom_exceptions import AIServiceError
 from app.logger import logger
+from app.observability import current_rag_observation
 
 
 client = OpenAI(api_key=OPENAI_API_KEY)
+CITED_RESPONSE_MODEL = "gpt-4.1-mini"
 
 
 class CitedAnswer(BaseModel):
@@ -65,14 +68,20 @@ Pregunta:
 {question}
 """
 
+    generation_started_at = perf_counter()
+
     try:
         response = client.responses.parse(
-            model="gpt-4.1-mini",
+            model=CITED_RESPONSE_MODEL,
             input=prompt,
             text_format=CitedAnswer,
         )
 
     except OpenAIError as exception:
+        _record_generation_observation(
+            latency_ms=_elapsed_milliseconds(generation_started_at),
+            model=CITED_RESPONSE_MODEL,
+        )
         logger.exception(
             "Error generando una respuesta citada con la API de OpenAI."
         )
@@ -80,6 +89,14 @@ Pregunta:
         raise AIServiceError(
             "No fue posible generar una respuesta con el modelo."
         ) from exception
+
+    usage = getattr(response, "usage", None)
+    _record_generation_observation(
+        latency_ms=_elapsed_milliseconds(generation_started_at),
+        model=getattr(response, "model", None) or CITED_RESPONSE_MODEL,
+        input_tokens=_usage_value(usage, "input_tokens"),
+        output_tokens=_usage_value(usage, "output_tokens"),
+    )
 
     parsed_answer = response.output_parsed
 
@@ -98,6 +115,42 @@ Pregunta:
     )
 
     return parsed_answer
+
+
+def _record_generation_observation(
+    *,
+    latency_ms: float,
+    model: str,
+    input_tokens: int | None = None,
+    output_tokens: int | None = None,
+) -> None:
+    observation = current_rag_observation()
+
+    if observation is None:
+        return
+
+    observation.record_generation(
+        latency_ms=latency_ms,
+        model=model,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+    )
+
+
+def _usage_value(usage: object, field_name: str) -> int | None:
+    if usage is None:
+        return None
+
+    if isinstance(usage, dict):
+        value = usage.get(field_name)
+    else:
+        value = getattr(usage, field_name, None)
+
+    return value if isinstance(value, int) else None
+
+
+def _elapsed_milliseconds(started_at: float) -> float:
+    return round((perf_counter() - started_at) * 1000, 3)
 
 
 def generate_response(

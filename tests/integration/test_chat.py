@@ -372,3 +372,59 @@ def test_chat_endpoint_rejects_invalid_message_type(
     )
 
     assert response.status_code == 422
+
+
+def test_chat_logs_final_validated_citations_without_payloads(
+    client: TestClient,
+    monkeypatch: Any,
+) -> None:
+    logged_events = []
+    sensitive_question = "pregunta privada del usuario"
+    sensitive_chunk = "contenido privado del documento"
+    sensitive_answer = "respuesta privada [[S2]]"
+    results = [
+        {
+            "source_id": "S1",
+            "text": sensitive_chunk,
+            "filename": "manual.pdf",
+            "page_number": 3,
+            "chunk_index": 1,
+        },
+        {
+            "source_id": "S2",
+            "text": sensitive_chunk,
+            "filename": "manual.pdf",
+            "page_number": 8,
+            "chunk_index": 2,
+        },
+    ]
+
+    monkeypatch.setattr(
+        "app.routers.chat.search_similar_chunks_with_metadata",
+        lambda question, n_results=6: results,
+    )
+    monkeypatch.setattr(
+        "app.routers.chat.generate_cited_response",
+        lambda question, chunks: CitedAnswer(
+            answer=sensitive_answer,
+            source_ids=["S2"],
+        ),
+    )
+    monkeypatch.setattr(
+        "app.observability.log_event",
+        lambda event, **fields: logged_events.append((event, fields)),
+    )
+
+    response = client.post("/chat", json={"message": sensitive_question})
+
+    assert response.status_code == 200
+    event, fields = logged_events[0]
+    serialized = str(fields)
+    assert event == "rag_request_completed"
+    assert fields["endpoint"] == "/chat"
+    assert fields["chunks_retrieved"] == 2
+    assert fields["cited_source_ids"] == ["S2"]
+    assert fields["cited_pages"] == [8]
+    assert sensitive_question not in serialized
+    assert sensitive_chunk not in serialized
+    assert sensitive_answer not in serialized
