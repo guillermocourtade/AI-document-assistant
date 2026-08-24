@@ -1,10 +1,11 @@
 import re
 from time import perf_counter
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.models.message import DocumentQuestion, Message
 from app.observability import RagObservation, observe_rag_request
+from app.rate_limit import enforce_expensive_endpoint_rate_limit
 from app.services.openai_service import CitedAnswer, generate_cited_response
 from app.services.vector_db_service import (
     search_similar_chunks_with_metadata,
@@ -194,7 +195,10 @@ def _retrieve_chunks(
     return results
 
 
-@router.post("/chat")
+@router.post(
+    "/chat",
+    dependencies=[Depends(enforce_expensive_endpoint_rate_limit)],
+)
 def chat_endpoint(message: Message):
     answer, cited_results = _run_rag(
         question=message.message,
@@ -207,7 +211,10 @@ def chat_endpoint(message: Message):
     }
 
 
-@router.post("/chat/document")
+@router.post(
+    "/chat/document",
+    dependencies=[Depends(enforce_expensive_endpoint_rate_limit)],
+)
 def chat_with_document(request: DocumentQuestion):
     question = request.message
     answer, cited_results = _run_rag(

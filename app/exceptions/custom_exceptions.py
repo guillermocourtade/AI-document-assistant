@@ -49,3 +49,24 @@ class AIServiceError(AppError):
 
     status_code = 502
     error_code = "ai_service_error"
+
+
+class RateLimitExceededError(AppError):
+    """Se produce cuando un cliente excede su cuota de solicitudes."""
+
+    status_code = 429
+    error_code = "rate_limit_exceeded"
+
+
+class ServiceBusyError(AppError):
+    """Se produce cuando no hay capacidad segura para otra operación."""
+
+    status_code = 503
+    error_code = "service_busy"
+
+
+class AIServiceTimeoutError(AppError):
+    """Se produce cuando una llamada al servicio de IA agota su timeout."""
+
+    status_code = 504
+    error_code = "ai_service_timeout"

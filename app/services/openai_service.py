@@ -1,16 +1,33 @@
+from contextlib import contextmanager
 import json
+from threading import BoundedSemaphore
 from time import perf_counter
+from typing import Iterator
 
-from openai import OpenAI, OpenAIError
+from openai import APITimeoutError, OpenAI, OpenAIError
 from pydantic import BaseModel, Field
 
-from app.config import OPENAI_API_KEY
-from app.exceptions.custom_exceptions import AIServiceError
-from app.logger import logger
+from app.config import (
+    OPENAI_API_KEY,
+    OPENAI_MAX_CONCURRENCY,
+    OPENAI_MAX_RETRIES,
+    OPENAI_TIMEOUT_SECONDS,
+)
+from app.exceptions.custom_exceptions import (
+    AIServiceError,
+    AIServiceTimeoutError,
+    ServiceBusyError,
+)
+from app.logger import log_event, logger
 from app.observability import current_rag_observation
 
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+client = OpenAI(
+    api_key=OPENAI_API_KEY,
+    timeout=OPENAI_TIMEOUT_SECONDS,
+    max_retries=OPENAI_MAX_RETRIES,
+)
+_openai_slots = BoundedSemaphore(OPENAI_MAX_CONCURRENCY)
 CITED_RESPONSE_MODEL = "gpt-4.1-mini"
 
 _UNTRUSTED_DATA_RULES = """
@@ -89,18 +106,32 @@ def generate_cited_response(
     generation_started_at = perf_counter()
 
     try:
-        response = client.responses.parse(
+        with _openai_slot("cited_generation"):
+            response = client.responses.parse(
+                model=CITED_RESPONSE_MODEL,
+                input=model_input,
+                text_format=CitedAnswer,
+            )
+
+    except APITimeoutError as exception:
+        _record_generation_observation(
+            latency_ms=_elapsed_milliseconds(generation_started_at),
             model=CITED_RESPONSE_MODEL,
-            input=model_input,
-            text_format=CitedAnswer,
         )
+        _log_openai_timeout(
+            operation="cited_generation",
+            model=CITED_RESPONSE_MODEL,
+        )
+        raise AIServiceTimeoutError(
+            "El servicio de IA excedió el tiempo de espera."
+        ) from exception
 
     except OpenAIError as exception:
         _record_generation_observation(
             latency_ms=_elapsed_milliseconds(generation_started_at),
             model=CITED_RESPONSE_MODEL,
         )
-        logger.exception(
+        logger.error(
             "Error generando una respuesta citada con la API de OpenAI."
         )
 
@@ -203,13 +234,23 @@ def generate_response(
     )
 
     try:
-        response = client.responses.create(
+        with _openai_slot("generation"):
+            response = client.responses.create(
+                model="gpt-4.1-mini",
+                input=model_input,
+            )
+
+    except APITimeoutError as exception:
+        _log_openai_timeout(
+            operation="generation",
             model="gpt-4.1-mini",
-            input=model_input,
         )
+        raise AIServiceTimeoutError(
+            "El servicio de IA excedió el tiempo de espera."
+        ) from exception
 
     except OpenAIError as exception:
-        logger.exception(
+        logger.error(
             "Error generando una respuesta con la API de OpenAI."
         )
 
@@ -242,13 +283,23 @@ def generate_embedding(text: str) -> list[float]:
     )
 
     try:
-        response = client.embeddings.create(
+        with _openai_slot("embedding"):
+            response = client.embeddings.create(
+                model="text-embedding-3-small",
+                input=text,
+            )
+
+    except APITimeoutError as exception:
+        _log_openai_timeout(
+            operation="embedding",
             model="text-embedding-3-small",
-            input=text,
         )
+        raise AIServiceTimeoutError(
+            "El servicio de IA excedió el tiempo de espera."
+        ) from exception
 
     except OpenAIError as exception:
-        logger.exception(
+        logger.error(
             "Error generando el embedding con la API de OpenAI."
         )
 
@@ -261,6 +312,35 @@ def generate_embedding(text: str) -> list[float]:
     )
 
     return response.data[0].embedding
+
+
+@contextmanager
+def _openai_slot(operation: str) -> Iterator[None]:
+    acquired = _openai_slots.acquire(blocking=False)
+
+    if not acquired:
+        log_event(
+            "openai_request_rejected",
+            operation=operation,
+            reason="concurrency_limit",
+        )
+        raise ServiceBusyError(
+            "El servicio de IA está temporalmente ocupado. "
+            "Inténtalo más tarde."
+        )
+
+    try:
+        yield
+    finally:
+        _openai_slots.release()
+
+
+def _log_openai_timeout(*, operation: str, model: str) -> None:
+    log_event(
+        "openai_request_timed_out",
+        operation=operation,
+        model=model,
+    )
 
 
 def _build_model_input(
