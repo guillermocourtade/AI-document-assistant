@@ -1,12 +1,21 @@
 import json
+from threading import BoundedSemaphore
 from types import SimpleNamespace
 
+import httpx
+from openai import APITimeoutError
 import pytest
 
+from app.config import OPENAI_MAX_RETRIES, OPENAI_TIMEOUT_SECONDS
+from app.exceptions.custom_exceptions import (
+    AIServiceTimeoutError,
+    ServiceBusyError,
+)
 from app.services.openai_service import (
     CitedAnswer,
     build_citation_context,
     build_context,
+    client,
     generate_cited_response,
     generate_embedding,
     generate_response,
@@ -25,6 +34,11 @@ def test_build_context_formats_chunks():
     assert isinstance(context, str)
     assert "Fragmento 1:\nPrimer fragmento" in context
     assert "Fragmento 2:\nSegundo fragmento" in context
+
+
+def test_openai_client_uses_configured_timeout_and_retries():
+    assert client.timeout == OPENAI_TIMEOUT_SECONDS
+    assert client.max_retries == OPENAI_MAX_RETRIES
 
 
 def test_build_citation_context_sends_ids_and_text_without_page_numbers():
@@ -278,4 +292,126 @@ def test_generate_cited_response_records_model_usage_and_latency(monkeypatch):
         assert observation.model == "gpt-4.1-mini-2026-01-01"
         assert observation.input_tokens == 120
         assert observation.output_tokens == 30
+
+
+def test_generate_cited_response_translates_timeout_and_logs_safely(
+    monkeypatch,
+):
+    logged_events = []
+    sensitive_question = "pregunta-secreta"
+    sensitive_chunk = "contenido-secreto"
+
+    def raise_timeout(**kwargs):
+        raise APITimeoutError(
+            request=httpx.Request("POST", "https://api.openai.com/v1")
+        )
+
+    monkeypatch.setattr(
+        "app.services.openai_service.client.responses.parse",
+        raise_timeout,
+    )
+    monkeypatch.setattr(
+        "app.services.openai_service.log_event",
+        lambda event, **fields: logged_events.append((event, fields)),
+    )
+
+    with pytest.raises(
+        AIServiceTimeoutError,
+        match="excedió el tiempo de espera",
+    ):
+        generate_cited_response(
+            question=sensitive_question,
+            chunks=[{"source_id": "S1", "text": sensitive_chunk}],
+        )
+
+    event, fields = logged_events[0]
+    serialized = json.dumps(fields)
+    assert event == "openai_request_timed_out"
+    assert fields == {
+        "operation": "cited_generation",
+        "model": "gpt-4.1-mini",
+    }
+    assert sensitive_question not in serialized
+    assert sensitive_chunk not in serialized
+
+
+def test_openai_concurrency_limit_rejects_without_calling_api(monkeypatch):
+    semaphore = BoundedSemaphore(1)
+    semaphore.acquire()
+    api_called = False
+    logged_events = []
+
+    def fail_if_called(**kwargs):
+        nonlocal api_called
+        api_called = True
+        raise AssertionError("La API no debe llamarse sin capacidad.")
+
+    monkeypatch.setattr(
+        "app.services.openai_service._openai_slots",
+        semaphore,
+    )
+    monkeypatch.setattr(
+        "app.services.openai_service.client.embeddings.create",
+        fail_if_called,
+    )
+    monkeypatch.setattr(
+        "app.services.openai_service.log_event",
+        lambda event, **fields: logged_events.append((event, fields)),
+    )
+
+    try:
+        with pytest.raises(
+            ServiceBusyError,
+            match="temporalmente ocupado",
+        ):
+            generate_embedding("Texto válido")
+    finally:
+        semaphore.release()
+
+    assert not api_called
+    assert logged_events == [
+        (
+            "openai_request_rejected",
+            {
+                "operation": "embedding",
+                "reason": "concurrency_limit",
+            },
+        )
+    ]
+
+
+def test_openai_slot_is_released_after_timeout(monkeypatch):
+    semaphore = BoundedSemaphore(1)
+    calls = 0
+
+    def timeout_then_succeed(**kwargs):
+        nonlocal calls
+        calls += 1
+
+        if calls == 1:
+            raise APITimeoutError(
+                request=httpx.Request("POST", "https://api.openai.com/v1")
+            )
+
+        return SimpleNamespace(
+            data=[SimpleNamespace(embedding=[0.4, 0.5])]
+        )
+
+    monkeypatch.setattr(
+        "app.services.openai_service._openai_slots",
+        semaphore,
+    )
+    monkeypatch.setattr(
+        "app.services.openai_service.client.embeddings.create",
+        timeout_then_succeed,
+    )
+    monkeypatch.setattr(
+        "app.services.openai_service.log_event",
+        lambda event, **fields: None,
+    )
+
+    with pytest.raises(AIServiceTimeoutError):
+        generate_embedding("Primer intento")
+
+    assert generate_embedding("Segundo intento") == [0.4, 0.5]
 

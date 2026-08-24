@@ -1,6 +1,7 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, Depends, File, UploadFile
 
 from app.models.message import Message
+from app.rate_limit import enforce_expensive_endpoint_rate_limit
 
 from app.services.document_service import (
     calculate_file_hash,
@@ -29,8 +30,11 @@ def get_documents():
     }
 
 
-@router.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
+@router.post(
+    "/upload",
+    dependencies=[Depends(enforce_expensive_endpoint_rate_limit)],
+)
+def upload_document(file: UploadFile = File(...)):
     validate_pdf(file)
 
     file_hash = calculate_file_hash(file)

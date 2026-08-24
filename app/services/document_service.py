@@ -190,7 +190,7 @@ def generate_embeddings(
             )
 
     except Exception:
-        logger.exception(
+        logger.error(
             "Ocurrió un error durante la generación de embeddings."
         )
         raise
