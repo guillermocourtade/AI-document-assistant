@@ -107,3 +107,81 @@ def test_upload_persists_page_aware_metadata(
         hashlib.sha256(pdf_bytes).hexdigest()
     }
     assert {metadata["chunk_index"] for metadata in metadatas} == {0, 1}
+
+
+def test_upload_rejects_spoofed_pdf_with_safe_error(
+    client: TestClient,
+) -> None:
+    sensitive_content = b"OPENAI_API_KEY=must-not-leak"
+
+    response = client.post(
+        "/upload",
+        files={
+            "file": (
+                "spoofed.pdf",
+                sensitive_content,
+                "application/pdf",
+            )
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "error": {
+            "code": "invalid_document",
+            "message": "El archivo no es un PDF válido.",
+        }
+    }
+    assert "must-not-leak" not in response.text
+    assert "Traceback" not in response.text
+
+
+def test_upload_rejects_pdf_over_configured_size(
+    client: TestClient,
+    monkeypatch,
+) -> None:
+    pdf_bytes = build_two_page_pdf()
+    monkeypatch.setattr(
+        "app.services.document_service.PDF_MAX_SIZE_BYTES",
+        len(pdf_bytes) - 1,
+    )
+
+    response = client.post(
+        "/upload",
+        files={"file": ("large.pdf", pdf_bytes, "application/pdf")},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"] == {
+        "code": "invalid_document",
+        "message": "El archivo PDF excede el tamaño máximo permitido.",
+    }
+
+
+def test_upload_rejects_pdf_over_configured_page_limit(
+    client: TestClient,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        "app.services.document_service.PDF_MAX_PAGES",
+        1,
+    )
+
+    response = client.post(
+        "/upload",
+        files={
+            "file": (
+                "too-many-pages.pdf",
+                build_two_page_pdf(),
+                "application/pdf",
+            )
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"] == {
+        "code": "invalid_document",
+        "message": (
+            "El archivo PDF excede el número máximo de páginas permitido."
+        ),
+    }

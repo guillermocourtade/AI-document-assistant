@@ -2,6 +2,7 @@ import hashlib
 
 from pypdf import PdfReader
 
+from app.config import PDF_MAX_PAGES, PDF_MAX_SIZE_BYTES
 from app.exceptions.custom_exceptions import (
     DocumentProcessingError,
     EmptyDocumentError,
@@ -26,13 +27,66 @@ def calculate_file_hash(file) -> str:
 def validate_pdf(file) -> None:
     if file.content_type != "application/pdf":
         logger.warning(
-            "Se rechazó un archivo con content_type=%s.",
-            file.content_type,
+            "Se rechazó un archivo porque su tipo declarado no es PDF."
         )
 
         raise InvalidDocumentError(
             "El archivo debe tener el tipo application/pdf."
         )
+
+    stream = file.file
+    original_position = stream.tell()
+
+    try:
+        stream.seek(0, 2)
+        file_size = stream.tell()
+
+        if file_size > PDF_MAX_SIZE_BYTES:
+            logger.warning(
+                "Se rechazó un PDF porque excede el tamaño permitido."
+            )
+            raise InvalidDocumentError(
+                "El archivo PDF excede el tamaño máximo permitido."
+            )
+
+        stream.seek(0)
+
+        if stream.read(5) != b"%PDF-":
+            logger.warning(
+                "Se rechazó un archivo sin una firma PDF válida."
+            )
+            raise InvalidDocumentError(
+                "El archivo no es un PDF válido."
+            )
+
+        stream.seek(0)
+        reader = PdfReader(stream)
+        page_count = len(reader.pages)
+
+        if page_count > PDF_MAX_PAGES:
+            logger.warning(
+                "Se rechazó un PDF porque excede el número de páginas "
+                "permitido. paginas=%d.",
+                page_count,
+            )
+            raise InvalidDocumentError(
+                "El archivo PDF excede el número máximo de páginas "
+                "permitido."
+            )
+
+    except InvalidDocumentError:
+        raise
+    except Exception as exception:
+        logger.warning(
+            "Se rechazó un archivo que no pudo validarse como PDF. "
+            "error_type=%s.",
+            type(exception).__name__,
+        )
+        raise InvalidDocumentError(
+            "El archivo no es un PDF válido."
+        ) from exception
+    finally:
+        stream.seek(original_position)
 
 
 def extract_text_from_pdf(file) -> str:
