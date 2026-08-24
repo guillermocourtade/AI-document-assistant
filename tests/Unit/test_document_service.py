@@ -1,14 +1,19 @@
+from io import BytesIO
+
 import pytest
+from pypdf import PdfWriter
 
 from app.exceptions.custom_exceptions import (
     DocumentProcessingError,
     EmptyDocumentError,
+    InvalidDocumentError,
 )
 from app.services.document_service import (
     extract_pages_from_pdf,
     generate_embeddings,
     split_pages,
     split_text,
+    validate_pdf,
 )
 
 
@@ -23,6 +28,104 @@ class FakePage:
 class FakeReader:
     def __init__(self, pages):
         self.pages = pages
+
+
+class FakeUploadFile:
+    def __init__(
+        self,
+        content: bytes,
+        content_type: str = "application/pdf",
+    ) -> None:
+        self.file = BytesIO(content)
+        self.content_type = content_type
+
+
+def build_pdf(page_count: int = 1) -> bytes:
+    writer = PdfWriter()
+
+    for _ in range(page_count):
+        writer.add_blank_page(width=612, height=792)
+
+    output = BytesIO()
+    writer.write(output)
+    return output.getvalue()
+
+
+def test_validate_pdf_rejects_wrong_declared_type():
+    file = FakeUploadFile(
+        build_pdf(),
+        content_type="text/plain",
+    )
+
+    with pytest.raises(
+        InvalidDocumentError,
+        match="tipo application/pdf",
+    ):
+        validate_pdf(file)
+
+
+def test_validate_pdf_rejects_file_over_configured_size(monkeypatch):
+    pdf = build_pdf()
+    file = FakeUploadFile(pdf)
+
+    monkeypatch.setattr(
+        "app.services.document_service.PDF_MAX_SIZE_BYTES",
+        len(pdf) - 1,
+    )
+
+    with pytest.raises(
+        InvalidDocumentError,
+        match="tamaño máximo",
+    ):
+        validate_pdf(file)
+
+
+def test_validate_pdf_rejects_spoofed_pdf_signature():
+    file = FakeUploadFile(b"not-a-pdf-with-sensitive-content")
+
+    with pytest.raises(
+        InvalidDocumentError,
+        match="no es un PDF válido",
+    ):
+        validate_pdf(file)
+
+
+def test_validate_pdf_rejects_malformed_pdf_with_valid_header():
+    file = FakeUploadFile(
+        b"%PDF-1.7\nOPENAI_API_KEY=should-never-be-returned"
+    )
+
+    with pytest.raises(
+        InvalidDocumentError,
+        match="no es un PDF válido",
+    ) as error:
+        validate_pdf(file)
+
+    assert "should-never-be-returned" not in str(error.value)
+
+
+def test_validate_pdf_rejects_too_many_pages(monkeypatch):
+    file = FakeUploadFile(build_pdf(page_count=2))
+
+    monkeypatch.setattr(
+        "app.services.document_service.PDF_MAX_PAGES",
+        1,
+    )
+
+    with pytest.raises(
+        InvalidDocumentError,
+        match="número máximo de páginas",
+    ):
+        validate_pdf(file)
+
+
+def test_validate_pdf_restores_stream_position():
+    file = FakeUploadFile(build_pdf())
+    file.file.seek(3)
+
+    validate_pdf(file)
+
+    assert file.file.tell() == 3
 
 
 def test_split_text_returns_list_of_strings():
