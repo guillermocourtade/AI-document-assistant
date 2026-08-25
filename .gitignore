@@ -1,5 +1,28 @@
+# Python environments and generated files
+.venv/
 venv/
-.env
+
 __pycache__/
+*.py[cod]
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environment files; keep templates versioned
+.env
+.env.*
+!.env.example
+
+# Frontend dependencies and build outputs
+node_modules/
+dist/
+build/
+
+# Local vector database
+chroma_db/
+
+# Local logs
+*.log
+
+# Existing project-local scratch file
 Experimentar.py
