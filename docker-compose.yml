@@ -7,3 +7,12 @@ services:
 
     env_file:
       - .env
+
+    environment:
+      CHROMA_DB_PATH: /app/chroma_db
+
+    volumes:
+      - chroma_data:/app/chroma_db
+
+volumes:
+  chroma_data:
