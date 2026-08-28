@@ -5,6 +5,26 @@ import os
 load_dotenv()
 
 
+def _origins_from_env(name: str, default: list[str]) -> list[str]:
+    raw_value = os.getenv(name)
+
+    if raw_value is None:
+        return default.copy()
+
+    origins = [
+        origin.strip()
+        for origin in raw_value.split(",")
+        if origin.strip()
+    ]
+
+    if "*" in origins:
+        raise RuntimeError(
+            f'{name} no puede contener "*" como origen permitido.'
+        )
+
+    return origins
+
+
 def _positive_int_from_env(name: str, default: int) -> int:
     raw_value = os.getenv(name)
 
@@ -80,6 +100,14 @@ APP_VERSION = os.getenv(
 APP_ENV = os.getenv(
     "APP_ENV",
     "development",
+)
+
+ALLOWED_ORIGINS = _origins_from_env(
+    "ALLOWED_ORIGINS",
+    [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
 )
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
