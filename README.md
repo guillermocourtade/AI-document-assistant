@@ -18,7 +18,9 @@ The project was built with a production-oriented approach: typed API contracts, 
 - Document-specific and multi-document chat
 - Source citations with page numbers
 - Backend validation of model-generated citations
-- SHA-256 document deduplication
+- Session-scoped SHA-256 document deduplication
+- Per-browser-session document isolation
+- Automatic document expiration and cleanup
 - Retrieval debugging endpoint
 - Reproducible retrieval and citation evaluation
 - Structured JSON observability
@@ -127,7 +129,11 @@ document_id
 filename
 file_hash
 chunk_index
+page
 page_number
+session_id
+created_at
+expires_at
 
 Chunks never cross page boundaries, which allows the system to preserve page-level provenance.
 
@@ -287,6 +293,11 @@ Default limits:
 PDF_MAX_SIZE_BYTES=10485760
 PDF_MAX_PAGES=100
 
+Document access requires a UUID in the `X-Session-ID` header. Every list,
+deduplication, existence check and retrieval query is scoped to that session.
+Documents expire after `DOCUMENT_TTL_HOURS` (24 hours by default), and expired
+chunks are cleaned before document and chat operations.
+
 Retrieved document content is treated as untrusted data.
 
 Trusted application instructions are separated from document content, and adversarial tests cover prompt-injection attempts.
@@ -325,6 +336,10 @@ POST /chat/document
 Retrieval debugging:
 
 POST /search
+
+All document, retrieval and chat endpoints require:
+
+X-Session-ID: <uuid>
 
 Controlled API errors use:
 
@@ -380,6 +395,7 @@ CHAT_RATE_LIMIT_REQUESTS=20
 OPENAI_TIMEOUT_SECONDS=30
 OPENAI_MAX_RETRIES=0
 OPENAI_MAX_CONCURRENCY=4
+DOCUMENT_TTL_HOURS=24
 
 Never commit the real .env file.
 
@@ -462,7 +478,7 @@ pytest
 
 Last documented hardening baseline:
 
-102 passing tests
+122 passing tests
 
 Tests use temporary ChromaDB storage rather than the real persistent database.
 
@@ -480,7 +496,9 @@ The final Top-6 configuration was selected using an evidence-level benchmark.
 
 Duplicate PDFs previously polluted ChromaDB and caused near-identical chunks to dominate retrieval.
 
-Documents are now deduplicated by SHA-256 before ingestion.
+Documents are deduplicated by SHA-256 within each browser session. The same PDF
+uploaded by a different session is stored independently and never reuses the
+first session's document ID.
 
 ### Isolated test database
 

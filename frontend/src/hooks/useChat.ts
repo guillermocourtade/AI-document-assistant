@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { api } from "../api/client";
-import { getFriendlyErrorMessage } from "../api/errors";
+import { ApiError, getFriendlyErrorMessage } from "../api/errors";
 import type {
   ChatMessage,
   ChatMode,
@@ -30,7 +30,7 @@ export function useChat() {
     async (message: string, mode: ChatMode, documentId?: string) => {
       const trimmedMessage = message.trim();
       if (!trimmedMessage || isAnswering) {
-        return;
+        return null;
       }
 
       setError(null);
@@ -65,6 +65,7 @@ export function useChat() {
             response.sources,
           ),
         ]);
+        return null;
       } catch (requestError) {
         const message = getFriendlyErrorMessage(requestError);
         setError(message);
@@ -72,6 +73,10 @@ export function useChat() {
           ...current,
           createMessage("assistant", message, documentId),
         ]);
+        return requestError instanceof ApiError &&
+          requestError.code === "document_not_found"
+          ? "document_not_found"
+          : null;
       } finally {
         setIsAnswering(false);
       }

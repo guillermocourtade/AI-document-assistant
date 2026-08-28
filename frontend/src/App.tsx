@@ -3,7 +3,6 @@ import { AppShell } from "./components/AppShell";
 import { ChatPanel } from "./components/ChatPanel";
 import { DocumentList } from "./components/DocumentList";
 import { DocumentUpload } from "./components/DocumentUpload";
-import { RetrievalPanel } from "./components/RetrievalPanel";
 import { useChat } from "./hooks/useChat";
 import { useDocuments } from "./hooks/useDocuments";
 import type { ChatMode } from "./types/api";
@@ -13,7 +12,7 @@ export default function App() {
     documents,
     isLoaded,
     addDocument,
-    clearDocuments,
+    refreshDocuments,
   } = useDocuments();
   const {
     messages,
@@ -51,8 +50,16 @@ export default function App() {
     setMode(nextMode);
   };
 
-  const handleSendMessage = (message: string) => {
-    return sendMessage(message, mode, activeDocumentId ?? undefined);
+  const handleSendMessage = async (message: string) => {
+    const result = await sendMessage(
+      message,
+      mode,
+      activeDocumentId ?? undefined,
+    );
+
+    if (result === "document_not_found") {
+      await refreshDocuments().catch(() => undefined);
+    }
   };
 
   return (
@@ -68,9 +75,10 @@ export default function App() {
               setActiveDocumentId(documentId);
               setMode("document");
             }}
-            onClearDocuments={clearDocuments}
+            onRefreshDocuments={() => {
+              void refreshDocuments().catch(() => undefined);
+            }}
           />
-          <RetrievalPanel />
         </aside>
 
         <ChatPanel

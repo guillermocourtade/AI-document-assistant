@@ -37,6 +37,13 @@ class DocumentNotFoundError(AppError):
     error_code = "document_not_found"
 
 
+class InvalidSessionError(AppError):
+    """Se produce cuando falta un identificador de sesión válido."""
+
+    status_code = 400
+    error_code = "invalid_session"
+
+
 class VectorDatabaseError(AppError):
     """Se produce cuando falla una operación contra ChromaDB."""
 

@@ -57,6 +57,8 @@ export type UploadedDocument = {
   filename: string;
   chunks_saved: number;
   uploaded_at?: string;
+  created_at?: string;
+  expires_at?: string;
 };
 
 export type ChatMode = "all" | "document";

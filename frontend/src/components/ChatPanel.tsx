@@ -64,8 +64,8 @@ export function ChatPanel({
   };
 
   return (
-    <section className="flex min-h-[620px] flex-col rounded-lg border border-slate-200 bg-white shadow-soft">
-      <div className="border-b border-slate-200 px-4 py-3">
+    <section className="flex min-h-[620px] flex-col overflow-hidden rounded-xl border border-indigo-100 bg-white/95 shadow-soft">
+      <div className="border-b border-indigo-100 bg-gradient-to-r from-white via-indigo-50/60 to-cyan-50/60 px-4 py-3">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-sm font-semibold text-slate-950">
@@ -85,7 +85,7 @@ export function ChatPanel({
                 onClick={() => onModeChange("all")}
                 className={`rounded px-3 py-2 transition ${
                   mode === "all"
-                    ? "bg-white text-slate-950 shadow-sm"
+                    ? "bg-indigo-600 text-white shadow-sm"
                     : "text-slate-500 hover:text-slate-900"
                 }`}
               >
@@ -97,7 +97,7 @@ export function ChatPanel({
                 disabled={!canUseDocumentMode}
                 className={`rounded px-3 py-2 transition disabled:cursor-not-allowed disabled:opacity-40 ${
                   mode === "document"
-                    ? "bg-white text-slate-950 shadow-sm"
+                    ? "bg-indigo-600 text-white shadow-sm"
                     : "text-slate-500 hover:text-slate-900"
                 }`}
               >
@@ -176,7 +176,7 @@ export function ChatPanel({
                         ? isLowConfidence
                           ? "border-amber-200 bg-amber-50 text-amber-900"
                           : "border-slate-200 bg-slate-50 text-slate-800"
-                        : "border-cyan-600 bg-cyan-600 text-white"
+                        : "border-indigo-600 bg-gradient-to-br from-indigo-600 to-cyan-600 text-white"
                     }`}
                   >
                     <p className="whitespace-pre-wrap break-words">
@@ -204,7 +204,7 @@ export function ChatPanel({
                       )}
                   </div>
                   {!isAssistant && (
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-cyan-600 text-white">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-cyan-500 text-white">
                       <User size={16} />
                     </span>
                   )}
@@ -243,7 +243,7 @@ export function ChatPanel({
           <button
             type="submit"
             disabled={!draft.trim() || isAnswering}
-            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-slate-900 text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-cyan-600 text-white shadow-sm transition hover:from-indigo-700 hover:to-cyan-700 disabled:cursor-not-allowed disabled:from-slate-300 disabled:to-slate-300"
             aria-label="Enviar mensaje"
             title="Enviar mensaje"
           >

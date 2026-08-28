@@ -1,9 +1,11 @@
 import pytest
+from datetime import datetime, timezone
 
 from app.exceptions.custom_exceptions import (
     DocumentNotFoundError,
 )
 from app.services.vector_db_service import (
+    cleanup_expired_documents,
     count_document_chunks,
     find_document_by_hash,
     list_documents,
@@ -11,6 +13,9 @@ from app.services.vector_db_service import (
     search_similar_chunks,
     search_similar_chunks_with_metadata,
 )
+
+
+SESSION_ID = "11111111-1111-4111-8111-111111111111"
 
 
 class FakeCollection:
@@ -66,6 +71,7 @@ def test_search_filters_chunks_by_distance(
 
     chunks = search_similar_chunks(
         question="Pregunta de prueba",
+        session_id=SESSION_ID,
         max_distance=1.2,
     )
 
@@ -92,7 +98,7 @@ def test_find_document_by_hash_returns_existing_document(
         lambda: FakeCollection(fake_results),
     )
 
-    document_id = find_document_by_hash("abc123")
+    document_id = find_document_by_hash("abc123", SESSION_ID)
 
     assert document_id == "documento-existente"
 
@@ -112,7 +118,7 @@ def test_count_document_chunks_returns_collection_count(
         lambda: FakeCollection(fake_results),
     )
 
-    assert count_document_chunks("documento-existente") == 2
+    assert count_document_chunks("documento-existente", SESSION_ID) == 2
 
 
 def test_list_documents_groups_chunks_by_document(
@@ -140,16 +146,20 @@ def test_list_documents_groups_chunks_by_document(
         lambda: FakeCollection(fake_results),
     )
 
-    assert list_documents() == [
+    assert list_documents(SESSION_ID) == [
         {
             "document_id": "documento-1",
             "filename": "uno.pdf",
             "chunks_saved": 2,
+            "created_at": None,
+            "expires_at": None,
         },
         {
             "document_id": "documento-2",
             "filename": "dos.pdf",
             "chunks_saved": 1,
+            "created_at": None,
+            "expires_at": None,
         },
     ]
 
@@ -179,22 +189,32 @@ def test_save_chunks_persists_page_number_with_existing_metadata(
         ],
         filename="documento.pdf",
         file_hash="hash-sha256",
+        session_id=SESSION_ID,
+        created_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
     )
 
     assert fake_collection.add_arguments["metadatas"] == [
         {
+            "session_id": SESSION_ID,
             "document_id": document_id,
             "filename": "documento.pdf",
             "file_hash": "hash-sha256",
             "chunk_index": 0,
+            "page": 2,
             "page_number": 2,
+            "created_at": "2026-01-01T00:00:00+00:00",
+            "expires_at": "2026-01-02T00:00:00+00:00",
         },
         {
+            "session_id": SESSION_ID,
             "document_id": document_id,
             "filename": "documento.pdf",
             "file_hash": "hash-sha256",
             "chunk_index": 1,
+            "page": 3,
             "page_number": 3,
+            "created_at": "2026-01-01T00:00:00+00:00",
+            "expires_at": "2026-01-02T00:00:00+00:00",
         },
     ]
 
@@ -204,7 +224,7 @@ def test_search_raises_when_document_does_not_exist(
 ):
     monkeypatch.setattr(
         "app.services.vector_db_service.document_exists",
-        lambda document_id: False,
+        lambda document_id, session_id: False,
     )
 
     with pytest.raises(
@@ -213,6 +233,7 @@ def test_search_raises_when_document_does_not_exist(
     ):
         search_similar_chunks(
             question="Pregunta",
+            session_id=SESSION_ID,
             document_id="documento-inexistente",
         )
 
@@ -251,6 +272,7 @@ def test_structured_search_returns_metadata_and_filters_distance(
 
     results = search_similar_chunks_with_metadata(
         question="Pregunta",
+        session_id=SESSION_ID,
         max_distance=1.2,
     )
 
@@ -269,7 +291,9 @@ def test_structured_search_returns_metadata_and_filters_distance(
         "metadatas",
     ]
     assert fake_collection.query_arguments["n_results"] == 6
-    assert "where" not in fake_collection.query_arguments
+    assert fake_collection.query_arguments["where"] == {
+        "session_id": SESSION_ID,
+    }
 
 
 def test_structured_search_filters_document_and_handles_legacy_metadata(
@@ -285,7 +309,7 @@ def test_structured_search_filters_document_and_handles_legacy_metadata(
 
     monkeypatch.setattr(
         "app.services.vector_db_service.document_exists",
-        lambda document_id: True,
+        lambda document_id, session_id: True,
     )
     monkeypatch.setattr(
         "app.services.vector_db_service.generate_embedding",
@@ -298,6 +322,7 @@ def test_structured_search_filters_document_and_handles_legacy_metadata(
 
     results = search_similar_chunks_with_metadata(
         question="Pregunta",
+        session_id=SESSION_ID,
         document_id="documento-antiguo",
     )
 
@@ -311,5 +336,8 @@ def test_structured_search_filters_document_and_handles_legacy_metadata(
         }
     ]
     assert fake_collection.query_arguments["where"] == {
-        "document_id": "documento-antiguo",
+        "$and": [
+            {"session_id": SESSION_ID},
+            {"document_id": "documento-antiguo"},
+        ],
     }

@@ -36,6 +36,7 @@ DEFAULT_GROUND_TRUTH_PATH = (
     EVALUATION_DIR / "data" / "RAG_Ground_Truth_con_paginas.md"
 )
 DEFAULT_RESULTS_PATH = EVALUATION_DIR / "results" / "baseline_results.json"
+EVALUATION_SESSION_ID = "00000000-0000-4000-8000-000000000001"
 
 RETRIEVAL_SIGNATURE = inspect.signature(search_similar_chunks_with_metadata)
 N_RESULTS = RETRIEVAL_SIGNATURE.parameters["n_results"].default
@@ -178,15 +179,24 @@ def ingest_benchmark_pdf(pdf_path: Path) -> tuple[str, int, str]:
         )
         validate_pdf(upload)
         file_hash = calculate_file_hash(upload)
-        document_id = find_document_by_hash(file_hash)
+        document_id = find_document_by_hash(file_hash, EVALUATION_SESSION_ID)
 
         if document_id is not None:
-            return document_id, count_document_chunks(document_id), file_hash
+            return (
+                document_id,
+                count_document_chunks(document_id, EVALUATION_SESSION_ID),
+                file_hash,
+            )
 
         pages = extract_pages_from_pdf(upload)
         chunks = split_pages(pages)
         chunks_with_embeddings = generate_embeddings(chunks)
-        document_id = save_chunks(chunks_with_embeddings, pdf_path.name, file_hash)
+        document_id = save_chunks(
+            chunks_with_embeddings,
+            pdf_path.name,
+            file_hash,
+            EVALUATION_SESSION_ID,
+        )
 
     return document_id, len(chunks), file_hash
 
@@ -200,7 +210,12 @@ def close_isolated_vector_db() -> None:
 
 def load_chunk_index_lookup(document_id: str) -> dict[tuple, int]:
     stored_chunks = get_collection().get(
-        where={"document_id": document_id},
+        where={
+            "$and": [
+                {"session_id": EVALUATION_SESSION_ID},
+                {"document_id": document_id},
+            ]
+        },
         include=["documents", "metadatas"],
     )
     lookup: dict[tuple, int] = {}
@@ -349,6 +364,7 @@ def evaluate_questions(
     for question in questions:
         retrieved = retrieval_function(
             question=question.question,
+            session_id=EVALUATION_SESSION_ID,
             n_results=n_results,
             document_id=document_id,
             max_distance=max_distance,

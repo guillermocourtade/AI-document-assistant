@@ -2,6 +2,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 
+TEST_SESSION_ID = "11111111-1111-4111-8111-111111111111"
+
+
 @pytest.fixture(autouse=True)
 def isolated_vector_db(tmp_path, monkeypatch):
     db_path = tmp_path / "chroma_db"
@@ -30,4 +33,5 @@ def client(isolated_vector_db) -> TestClient:
     from app.main import app
 
     with TestClient(app) as test_client:
+        test_client.headers["X-Session-ID"] = TEST_SESSION_ID
         yield test_client
