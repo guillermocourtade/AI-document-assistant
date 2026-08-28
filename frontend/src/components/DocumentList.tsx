@@ -1,4 +1,4 @@
-import { FileText, Trash2 } from "lucide-react";
+import { FileText, RefreshCw } from "lucide-react";
 import { EmptyState } from "./EmptyState";
 import type { UploadedDocument } from "../types/api";
 
@@ -7,7 +7,7 @@ type DocumentListProps = {
   activeDocumentId: string | null;
   isLoaded: boolean;
   onSelectDocument: (documentId: string) => void;
-  onClearDocuments: () => void;
+  onRefreshDocuments: () => void;
 };
 
 export function DocumentList({
@@ -15,28 +15,25 @@ export function DocumentList({
   activeDocumentId,
   isLoaded,
   onSelectDocument,
-  onClearDocuments,
+  onRefreshDocuments,
 }: DocumentListProps) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-soft">
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+    <section className="rounded-xl border border-indigo-100 bg-white/95 shadow-soft">
+      <div className="flex items-center justify-between border-b border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-cyan-50/60 px-4 py-3">
         <div>
           <h2 className="text-sm font-semibold text-slate-950">
             Documentos subidos
           </h2>
-          <p className="text-xs text-slate-500">
-            Consultados desde ChromaDB
-          </p>
+          <p className="text-xs text-slate-500">Disponibles en esta sesión</p>
         </div>
         <button
           type="button"
-          onClick={onClearDocuments}
-          disabled={documents.length === 0}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
-          aria-label="Limpiar documentos"
-          title="Limpiar documentos"
+          onClick={onRefreshDocuments}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-indigo-200 bg-white text-indigo-600 transition hover:border-indigo-300 hover:bg-indigo-50"
+          aria-label="Actualizar documentos"
+          title="Actualizar documentos"
         >
-          <Trash2 size={16} />
+          <RefreshCw size={16} />
         </button>
       </div>
 
@@ -63,12 +60,12 @@ export function DocumentList({
                   onClick={() => onSelectDocument(document.document_id)}
                   className={`w-full rounded-md border px-3 py-3 text-left transition ${
                     isActive
-                      ? "border-cyan-500 bg-cyan-50"
-                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                      ? "border-indigo-400 bg-gradient-to-r from-indigo-50 to-cyan-50 ring-2 ring-indigo-100"
+                      : "border-slate-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/40"
                   }`}
                 >
                   <span className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-slate-900 text-white">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-cyan-500 text-white shadow-sm">
                       <FileText size={16} />
                     </span>
                     <span className="min-w-0">
@@ -76,8 +73,7 @@ export function DocumentList({
                         {document.filename}
                       </span>
                       <span className="mt-1 block text-xs text-slate-500">
-                        {document.chunks_saved} chunks -{" "}
-                        {document.document_id.slice(0, 8)}
+                        {document.chunks_saved} fragmentos procesados
                       </span>
                     </span>
                   </span>

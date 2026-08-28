@@ -1,4 +1,5 @@
 import { ApiError, toApiError } from "./errors";
+import { getSessionId } from "./session";
 import type {
   ChatRequest,
   ChatResponse,
@@ -33,12 +34,13 @@ async function parseJson(response: Response): Promise<unknown> {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers = new Headers(init?.headers);
+  headers.set("Content-Type", "application/json");
+  headers.set("X-Session-ID", getSessionId());
+
   const response = await fetch(buildUrl(path), {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
+    headers,
   });
 
   const body = await parseJson(response);
@@ -99,6 +101,7 @@ export const api = {
 
       const xhr = new XMLHttpRequest();
       xhr.open("POST", buildUrl("/upload"));
+      xhr.setRequestHeader("X-Session-ID", getSessionId());
 
       xhr.upload.onprogress = (event) => {
         if (!event.lengthComputable || !onProgress) {

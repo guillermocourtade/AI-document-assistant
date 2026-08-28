@@ -1,6 +1,6 @@
 import pytest
 
-from app.config import _origins_from_env
+from app.config import _origins_from_env, _positive_int_from_env
 
 
 DEFAULT_ORIGINS = [
@@ -72,3 +72,30 @@ def test_allowed_origins_rejects_wildcard(
 
     with pytest.raises(RuntimeError, match="no puede contener"):
         _origins_from_env("ALLOWED_ORIGINS", DEFAULT_ORIGINS)
+
+
+def test_document_ttl_hours_uses_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("DOCUMENT_TTL_HOURS", raising=False)
+
+    assert _positive_int_from_env("DOCUMENT_TTL_HOURS", 24) == 24
+
+
+def test_document_ttl_hours_can_be_configured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DOCUMENT_TTL_HOURS", "12")
+
+    assert _positive_int_from_env("DOCUMENT_TTL_HOURS", 24) == 12
+
+
+@pytest.mark.parametrize("value", ["0", "-1", "invalid"])
+def test_document_ttl_hours_rejects_invalid_values(
+    monkeypatch: pytest.MonkeyPatch,
+    value: str,
+) -> None:
+    monkeypatch.setenv("DOCUMENT_TTL_HOURS", value)
+
+    with pytest.raises(RuntimeError, match="entero positivo"):
+        _positive_int_from_env("DOCUMENT_TTL_HOURS", 24)

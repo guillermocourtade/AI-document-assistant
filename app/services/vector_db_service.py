@@ -1,8 +1,10 @@
 import os
 import uuid
+from datetime import datetime, timedelta, timezone
 
 import chromadb
 
+from app.config import DOCUMENT_TTL_HOURS
 from app.exceptions.custom_exceptions import (
     DocumentNotFoundError,
     VectorDatabaseError,
@@ -31,49 +33,125 @@ def get_collection():
         _client = chromadb.PersistentClient(path=_db_path)
 
     if _collection is None:
-        _collection = _client.get_or_create_collection(
-            name="documents"
-        )
+        _collection = _client.get_or_create_collection(name="documents")
 
     return _collection
 
 
-def find_document_by_hash(file_hash: str) -> str | None:
+def _session_filter(session_id: str) -> dict:
+    return {"session_id": session_id}
+
+
+def _session_document_filter(session_id: str, document_id: str) -> dict:
+    return {
+        "$and": [
+            {"session_id": session_id},
+            {"document_id": document_id},
+        ]
+    }
+
+
+def _utc_timestamp(value: datetime) -> str:
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+
+    return value.astimezone(timezone.utc).isoformat()
+
+
+def _parse_timestamp(value: object) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+
     try:
-        results = get_collection().get(
-            where={"file_hash": file_hash},
-            limit=1,
-        )
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+
+    return parsed.astimezone(timezone.utc)
+
+
+def cleanup_expired_documents(now: datetime | None = None) -> int:
+    current_time = now or datetime.now(timezone.utc)
+    if current_time.tzinfo is None:
+        current_time = current_time.replace(tzinfo=timezone.utc)
+    current_time = current_time.astimezone(timezone.utc)
+
+    try:
+        collection = get_collection()
+        results = collection.get(include=["metadatas"])
+        ids = results.get("ids", [])
+        metadatas = results.get("metadatas", [])
+
+        expired_document_ids = {
+            metadata.get("document_id")
+            for metadata in metadatas
+            if metadata
+            and metadata.get("document_id")
+            and (expires_at := _parse_timestamp(metadata.get("expires_at")))
+            is not None
+            and expires_at <= current_time
+        }
+        expired_chunk_ids = [
+            chunk_id
+            for chunk_id, metadata in zip(ids, metadatas)
+            if metadata
+            and metadata.get("document_id") in expired_document_ids
+        ]
+
+        if expired_chunk_ids:
+            collection.delete(ids=expired_chunk_ids)
 
     except Exception as exception:
-        logger.exception(
-            "Error buscando documento por hash."
+        logger.exception("Error eliminando documentos expirados.")
+        raise VectorDatabaseError(
+            "No fue posible limpiar los documentos expirados."
+        ) from exception
+
+    if expired_document_ids:
+        logger.info(
+            "Limpieza de retención terminada. documentos_eliminados=%d, "
+            "chunks_eliminados=%d.",
+            len(expired_document_ids),
+            len(expired_chunk_ids),
         )
 
+    return len(expired_document_ids)
+
+
+def find_document_by_hash(file_hash: str, session_id: str) -> str | None:
+    try:
+        results = get_collection().get(
+            where={
+                "$and": [
+                    _session_filter(session_id),
+                    {"file_hash": file_hash},
+                ]
+            },
+            limit=1,
+        )
+    except Exception as exception:
+        logger.exception("Error buscando documento por hash.")
         raise VectorDatabaseError(
             "No fue posible consultar documentos existentes."
         ) from exception
 
     metadatas = results.get("metadatas", [])
-
     if not metadatas:
         return None
 
     return metadatas[0].get("document_id")
 
 
-def count_document_chunks(document_id: str) -> int:
+def count_document_chunks(document_id: str, session_id: str) -> int:
     try:
         results = get_collection().get(
-            where={"document_id": document_id},
+            where=_session_document_filter(session_id, document_id),
         )
-
     except Exception as exception:
-        logger.exception(
-            "Error contando chunks del documento %s.",
-            document_id,
-        )
-
+        logger.exception("Error contando chunks de un documento.")
         raise VectorDatabaseError(
             "No fue posible consultar documentos existentes."
         ) from exception
@@ -81,17 +159,14 @@ def count_document_chunks(document_id: str) -> int:
     return len(results.get("ids", []))
 
 
-def list_documents() -> list[dict]:
+def list_documents(session_id: str) -> list[dict]:
     try:
         results = get_collection().get(
+            where=_session_filter(session_id),
             include=["metadatas"],
         )
-
     except Exception as exception:
-        logger.exception(
-            "Error listando documentos."
-        )
-
+        logger.exception("Error listando documentos.")
         raise VectorDatabaseError(
             "No fue posible listar los documentos."
         ) from exception
@@ -100,7 +175,6 @@ def list_documents() -> list[dict]:
 
     for metadata in results.get("metadatas", []):
         document_id = metadata.get("document_id")
-
         if document_id is None:
             continue
 
@@ -110,9 +184,10 @@ def list_documents() -> list[dict]:
                 "document_id": document_id,
                 "filename": metadata.get("filename", "Documento"),
                 "chunks_saved": 0,
+                "created_at": metadata.get("created_at"),
+                "expires_at": metadata.get("expires_at"),
             },
         )
-
         document["chunks_saved"] += 1
 
     return list(documents_by_id.values())
@@ -122,8 +197,17 @@ def save_chunks(
     chunks_with_embeddings: list[dict],
     filename: str,
     file_hash: str,
+    session_id: str,
+    created_at: datetime | None = None,
 ) -> str:
     document_id = str(uuid.uuid4())
+    creation_time = created_at or datetime.now(timezone.utc)
+    if creation_time.tzinfo is None:
+        creation_time = creation_time.replace(tzinfo=timezone.utc)
+    creation_time = creation_time.astimezone(timezone.utc)
+    expiration_time = creation_time + timedelta(hours=DOCUMENT_TTL_HOURS)
+    created_at_value = _utc_timestamp(creation_time)
+    expires_at_value = _utc_timestamp(expiration_time)
 
     ids: list[str] = []
     documents: list[str] = []
@@ -134,22 +218,21 @@ def save_chunks(
         ids.append(str(uuid.uuid4()))
         documents.append(item["text"])
         embeddings.append(item["embedding"])
-
         metadatas.append(
             {
+                "session_id": session_id,
                 "document_id": document_id,
                 "filename": filename,
                 "file_hash": file_hash,
                 "chunk_index": index,
+                "page": item["page_number"],
                 "page_number": item["page_number"],
+                "created_at": created_at_value,
+                "expires_at": expires_at_value,
             }
         )
 
-    logger.info(
-        "Guardando %d chunks para el documento %s.",
-        len(documents),
-        document_id,
-    )
+    logger.info("Guardando %d chunks.", len(documents))
 
     try:
         get_collection().add(
@@ -158,162 +241,117 @@ def save_chunks(
             embeddings=embeddings,
             metadatas=metadatas,
         )
-
     except Exception as exception:
-        logger.exception(
-            "Error guardando chunks en la base vectorial."
-        )
-
+        logger.exception("Error guardando chunks en la base vectorial.")
         raise VectorDatabaseError(
             "No fue posible guardar los chunks en la base vectorial."
         ) from exception
 
-    logger.info(
-        "Documento guardado correctamente. document_id=%s, chunks=%d.",
-        document_id,
-        len(documents),
-    )
-
+    logger.info("Documento guardado correctamente. chunks=%d.", len(documents))
     return document_id
 
 
 def search_similar_chunks(
     question: str,
+    session_id: str,
     n_results: int = 6,
     document_id: str | None = None,
     max_distance: float = 1.2,
 ) -> list[str]:
     logger.info(
-        "Iniciando búsqueda vectorial. "
-        "document_id=%s, top_k=%d, max_distance=%.2f.",
-        document_id,
+        "Iniciando búsqueda vectorial. filtro_documento=%s, top_k=%d, "
+        "max_distance=%.2f.",
+        document_id is not None,
         n_results,
         max_distance,
     )
 
-    if document_id is not None and not document_exists(document_id):
-        logger.warning(
-            "No existe el documento solicitado. document_id=%s.",
-            document_id,
-        )
-
+    if document_id is not None and not document_exists(document_id, session_id):
+        logger.warning("No existe el documento solicitado en la sesión.")
         raise DocumentNotFoundError(
-            f"No existe un documento con el ID '{document_id}'."
+            "No existe un documento disponible con ese ID en esta sesión."
         )
 
-    # Si OpenAI falla, debe conservarse AIServiceError.
     question_embedding = generate_embedding(question)
-
     query_arguments = {
         "query_embeddings": [question_embedding],
         "n_results": n_results,
         "include": ["documents", "distances"],
+        "where": _session_filter(session_id),
     }
-
     if document_id is not None:
-        query_arguments["where"] = {
-            "document_id": document_id,
-        }
-
-    try:
-        results = get_collection().query(**query_arguments)
-
-    except Exception as exception:
-        logger.exception(
-            "Error consultando la base vectorial. document_id=%s.",
+        query_arguments["where"] = _session_document_filter(
+            session_id,
             document_id,
         )
 
+    try:
+        results = get_collection().query(**query_arguments)
+    except Exception as exception:
+        logger.exception("Error consultando la base vectorial.")
         raise VectorDatabaseError(
             "No fue posible consultar la base vectorial."
         ) from exception
 
     documents = results.get("documents", [])
     distances = results.get("distances", [])
-
     if not documents or not distances:
-        logger.info(
-            "La consulta vectorial no devolvió resultados. "
-            "document_id=%s.",
-            document_id,
-        )
-
         return []
 
     retrieved_documents = documents[0]
     retrieved_distances = distances[0]
-
     relevant_chunks = [
         chunk
-        for chunk, distance in zip(
-            retrieved_documents,
-            retrieved_distances,
-        )
+        for chunk, distance in zip(retrieved_documents, retrieved_distances)
         if distance <= max_distance
     ]
-
     logger.info(
         "Búsqueda terminada. recuperados=%d, relevantes=%d.",
         len(retrieved_documents),
         len(relevant_chunks),
     )
-
-    logger.debug(
-        "Distancias recuperadas: %s.",
-        retrieved_distances,
-    )
-
+    logger.debug("Distancias recuperadas: %s.", retrieved_distances)
     return relevant_chunks
 
 
 def search_similar_chunks_with_metadata(
     question: str,
+    session_id: str,
     n_results: int = 6,
     document_id: str | None = None,
     max_distance: float = 1.2,
 ) -> list[dict]:
     logger.info(
         "Iniciando búsqueda vectorial con metadata. "
-        "document_id=%s, top_k=%d, max_distance=%.2f.",
-        document_id,
+        "filtro_documento=%s, top_k=%d, max_distance=%.2f.",
+        document_id is not None,
         n_results,
         max_distance,
     )
 
-    if document_id is not None and not document_exists(document_id):
-        logger.warning(
-            "No existe el documento solicitado. document_id=%s.",
-            document_id,
-        )
-
+    if document_id is not None and not document_exists(document_id, session_id):
+        logger.warning("No existe el documento solicitado en la sesión.")
         raise DocumentNotFoundError(
-            f"No existe un documento con el ID '{document_id}'."
+            "No existe un documento disponible con ese ID en esta sesión."
         )
 
-    # Si OpenAI falla, debe conservarse AIServiceError.
     question_embedding = generate_embedding(question)
-
     query_arguments = {
         "query_embeddings": [question_embedding],
         "n_results": n_results,
         "include": ["documents", "distances", "metadatas"],
+        "where": _session_filter(session_id),
     }
-
     if document_id is not None:
-        query_arguments["where"] = {
-            "document_id": document_id,
-        }
-
-    try:
-        results = get_collection().query(**query_arguments)
-
-    except Exception as exception:
-        logger.exception(
-            "Error consultando la base vectorial con metadata. "
-            "document_id=%s.",
+        query_arguments["where"] = _session_document_filter(
+            session_id,
             document_id,
         )
 
+    try:
+        results = get_collection().query(**query_arguments)
+    except Exception as exception:
+        logger.exception("Error consultando la base vectorial con metadata.")
         raise VectorDatabaseError(
             "No fue posible consultar la base vectorial."
         ) from exception
@@ -321,20 +359,12 @@ def search_similar_chunks_with_metadata(
     documents = results.get("documents", [])
     distances = results.get("distances", [])
     metadatas = results.get("metadatas", [])
-
     if not documents or not distances:
-        logger.info(
-            "La consulta vectorial con metadata no devolvió resultados. "
-            "document_id=%s.",
-            document_id,
-        )
-
         return []
 
     retrieved_documents = documents[0]
     retrieved_distances = distances[0]
     retrieved_metadatas = metadatas[0] if metadatas else []
-
     relevant_chunks: list[dict] = []
 
     for index, (chunk, distance) in enumerate(
@@ -349,9 +379,8 @@ def search_similar_chunks_with_metadata(
             and retrieved_metadatas[index] is not None
             else {}
         )
-        page_number = metadata.get("page_number")
-
-        if not isinstance(page_number, int):
+        page_number = metadata.get("page", metadata.get("page_number"))
+        if not isinstance(page_number, int) or isinstance(page_number, bool):
             page_number = None
 
         relevant_chunks.append(
@@ -369,45 +398,27 @@ def search_similar_chunks_with_metadata(
         len(retrieved_documents),
         len(relevant_chunks),
     )
-
     logger.debug(
         "Distancias recuperadas con metadata: %s.",
         retrieved_distances,
     )
-
     return relevant_chunks
 
 
-def document_exists(document_id: str) -> bool:
-    logger.debug(
-        "Verificando existencia del documento %s.",
-        document_id,
-    )
+def document_exists(document_id: str, session_id: str) -> bool:
+    logger.debug("Verificando existencia de un documento en la sesión.")
 
     try:
         results = get_collection().get(
-            where={"document_id": document_id},
+            where=_session_document_filter(session_id, document_id),
             limit=1,
         )
-
     except Exception as exception:
-        logger.exception(
-            "Error verificando el documento %s.",
-            document_id,
-        )
-
+        logger.exception("Error verificando un documento.")
         raise VectorDatabaseError(
-            "No fue posible verificar el documento "
-            "en la base vectorial."
+            "No fue posible verificar el documento en la base vectorial."
         ) from exception
 
-    ids = results.get("ids", [])
-    exists = bool(ids)
-
-    logger.debug(
-        "Resultado de verificación. document_id=%s, exists=%s.",
-        document_id,
-        exists,
-    )
-
+    exists = bool(results.get("ids", []))
+    logger.debug("Resultado de verificación. exists=%s.", exists)
     return exists

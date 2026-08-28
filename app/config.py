@@ -151,3 +151,8 @@ OPENAI_MAX_CONCURRENCY = _positive_int_from_env(
     "OPENAI_MAX_CONCURRENCY",
     4,
 )
+
+DOCUMENT_TTL_HOURS = _positive_int_from_env(
+    "DOCUMENT_TTL_HOURS",
+    24,
+)

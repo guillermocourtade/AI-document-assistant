@@ -14,6 +14,7 @@ from evaluation.evaluate_retrieval import (
     CHUNK_SIZE,
     DEFAULT_GROUND_TRUTH_PATH,
     DEFAULT_PDF_PATH,
+    EVALUATION_SESSION_ID,
     MAX_DISTANCE,
     N_RESULTS,
     OVERLAP,
@@ -103,6 +104,7 @@ def evaluate_citation_questions(
 
         retrieved = retrieval_function(
             question=question.question,
+            session_id=EVALUATION_SESSION_ID,
             n_results=n_results,
             document_id=document_id,
             max_distance=max_distance,

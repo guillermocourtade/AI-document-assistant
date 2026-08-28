@@ -1,4 +1,5 @@
 import hashlib
+from datetime import datetime
 from io import BytesIO
 
 from fastapi.testclient import TestClient
@@ -99,6 +100,10 @@ def test_upload_persists_page_aware_metadata(
     metadatas = stored["metadatas"]
 
     assert {metadata["page_number"] for metadata in metadatas} == {1, 2}
+    assert {metadata["page"] for metadata in metadatas} == {1, 2}
+    assert {metadata["session_id"] for metadata in metadatas} == {
+        "11111111-1111-4111-8111-111111111111"
+    }
     assert {metadata["document_id"] for metadata in metadatas} == {
         document_id
     }
@@ -107,6 +112,17 @@ def test_upload_persists_page_aware_metadata(
         hashlib.sha256(pdf_bytes).hexdigest()
     }
     assert {metadata["chunk_index"] for metadata in metadatas} == {0, 1}
+    created_at_values = {
+        datetime.fromisoformat(metadata["created_at"])
+        for metadata in metadatas
+    }
+    expires_at_values = {
+        datetime.fromisoformat(metadata["expires_at"])
+        for metadata in metadatas
+    }
+    assert len(created_at_values) == 1
+    assert len(expires_at_values) == 1
+    assert expires_at_values.pop() > created_at_values.pop()
 
 
 def test_upload_rejects_spoofed_pdf_with_safe_error(

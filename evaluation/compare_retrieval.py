@@ -11,6 +11,7 @@ from evaluation.evaluate_retrieval import (
     DEFAULT_GROUND_TRUTH_PATH,
     DEFAULT_PDF_PATH,
     EVALUATION_DIR,
+    EVALUATION_SESSION_ID,
     MAX_DISTANCE,
     BenchmarkQuestion,
     build_question_result,
@@ -109,6 +110,7 @@ def evaluate_reranked_questions(
         retrieval_started = perf_counter()
         retrieved = retrieval_function(
             question=question.question,
+            session_id=EVALUATION_SESSION_ID,
             n_results=candidate_pool_size,
             document_id=document_id,
             max_distance=MAX_DISTANCE,

@@ -18,6 +18,7 @@ def test_chat_endpoint_returns_generated_answer(
 
     def fake_search_similar_chunks_with_metadata(
         question: str,
+        session_id: str,
         n_results: int = 6,
     ) -> list[dict]:
         received_data["search_question"] = question
@@ -107,6 +108,7 @@ def test_chat_endpoint_returns_fallback_when_no_chunks_are_found(
 
     def fake_search_similar_chunks_with_metadata(
         question: str,
+        session_id: str,
         n_results: int = 6,
     ) -> list[dict]:
         return []
@@ -154,6 +156,7 @@ def test_document_chat_returns_sources_and_text_only_context(
 
     def fake_search_similar_chunks_with_metadata(
         question: str,
+        session_id: str,
         n_results: int = 6,
         document_id: str | None = None,
         max_distance: float = 1.2,
@@ -236,7 +239,7 @@ def test_chat_discards_invented_ids_and_model_page_numbers(
 
     monkeypatch.setattr(
         "app.routers.chat.search_similar_chunks_with_metadata",
-        lambda question, n_results=6: results,
+        lambda question, session_id, n_results=6: results,
     )
     monkeypatch.setattr(
         "app.routers.chat.generate_cited_response",
@@ -305,7 +308,7 @@ def test_chat_normalizes_only_validated_citation_format(
 
     monkeypatch.setattr(
         "app.routers.chat.search_similar_chunks_with_metadata",
-        lambda question, n_results=6: results,
+        lambda question, session_id, n_results=6: results,
     )
     monkeypatch.setattr(
         "app.routers.chat.generate_cited_response",
@@ -401,7 +404,7 @@ def test_chat_logs_final_validated_citations_without_payloads(
 
     monkeypatch.setattr(
         "app.routers.chat.search_similar_chunks_with_metadata",
-        lambda question, n_results=6: results,
+        lambda question, session_id, n_results=6: results,
     )
     monkeypatch.setattr(
         "app.routers.chat.generate_cited_response",

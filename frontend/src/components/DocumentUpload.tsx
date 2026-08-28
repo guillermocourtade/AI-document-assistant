@@ -1,8 +1,9 @@
-import { UploadCloud } from "lucide-react";
+import { ShieldCheck, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
 import { api } from "../api/client";
 import { getFriendlyErrorMessage } from "../api/errors";
 import type { UploadDocumentResponse } from "../types/api";
+import { DOCUMENT_TTL_HOURS } from "../config";
 
 type DocumentUploadProps = {
   onUploaded: (response: UploadDocumentResponse) => void;
@@ -52,11 +53,11 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
   };
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-soft">
-      <div className="border-b border-slate-200 px-4 py-3">
+    <section className="rounded-xl border border-indigo-100 bg-white/95 shadow-soft">
+      <div className="border-b border-indigo-100 bg-gradient-to-r from-indigo-50/80 to-cyan-50/60 px-4 py-3">
         <h2 className="text-sm font-semibold text-slate-950">Subir PDF</h2>
         <p className="text-xs text-slate-500">
-          El backend procesa texto, chunks y embeddings.
+          Añade un documento para comenzar a consultar.
         </p>
       </div>
 
@@ -77,11 +78,11 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
           }}
           className={`flex w-full flex-col items-center justify-center rounded-lg border border-dashed px-4 py-8 text-center transition ${
             isDragging
-              ? "border-cyan-500 bg-cyan-50"
-              : "border-slate-300 bg-slate-50 hover:border-slate-400"
+              ? "border-cyan-500 bg-cyan-50 ring-4 ring-cyan-100"
+              : "border-indigo-200 bg-gradient-to-br from-indigo-50/70 to-cyan-50/60 hover:border-indigo-400"
           }`}
         >
-          <span className="flex h-11 w-11 items-center justify-center rounded-md bg-slate-900 text-white">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-500 text-white shadow-md shadow-indigo-200">
             <UploadCloud size={20} />
           </span>
           <span className="mt-3 text-sm font-semibold text-slate-950">
@@ -99,6 +100,15 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
           className="hidden"
           onChange={(event) => handleFiles(event.target.files)}
         />
+
+        <div className="mt-4 flex gap-3 rounded-lg border border-sky-100 bg-sky-50/80 px-3 py-3 text-sky-900">
+          <ShieldCheck size={17} className="mt-0.5 shrink-0 text-sky-600" />
+          <p className="text-xs leading-5">
+            Tus documentos son temporales y solo están disponibles durante
+            esta sesión. Se eliminan automáticamente después de{" "}
+            {DOCUMENT_TTL_HOURS} horas. No subas información sensible.
+          </p>
+        </div>
 
         {isUploading && (
           <div className="mt-4">

@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from app.models.message import DocumentQuestion, Message
 from app.observability import RagObservation, observe_rag_request
 from app.rate_limit import enforce_expensive_endpoint_rate_limit
+from app.session import get_active_session_id
 from app.services.openai_service import CitedAnswer, generate_cited_response
 from app.services.vector_db_service import (
     search_similar_chunks_with_metadata,
@@ -145,11 +146,13 @@ def _run_rag(
     *,
     question: str,
     endpoint: str,
+    session_id: str,
     document_id: str | None = None,
 ) -> tuple[str, list[dict]]:
     with observe_rag_request(endpoint) as observation:
         results = _retrieve_chunks(
             question=question,
+            session_id=session_id,
             document_id=document_id,
             observation=observation,
         )
@@ -172,6 +175,7 @@ def _run_rag(
 def _retrieve_chunks(
     *,
     question: str,
+    session_id: str,
     document_id: str | None,
     observation: RagObservation,
 ) -> list[dict]:
@@ -179,10 +183,14 @@ def _retrieve_chunks(
 
     try:
         if document_id is None:
-            results = search_similar_chunks_with_metadata(question)
+            results = search_similar_chunks_with_metadata(
+                question,
+                session_id,
+            )
         else:
             results = search_similar_chunks_with_metadata(
                 question=question,
+                session_id=session_id,
                 document_id=document_id,
             )
     finally:
@@ -199,10 +207,14 @@ def _retrieve_chunks(
     "/chat",
     dependencies=[Depends(enforce_expensive_endpoint_rate_limit)],
 )
-def chat_endpoint(message: Message):
+def chat_endpoint(
+    message: Message,
+    session_id: str = Depends(get_active_session_id),
+):
     answer, cited_results = _run_rag(
         question=message.message,
         endpoint="/chat",
+        session_id=session_id,
     )
 
     return {
@@ -215,11 +227,15 @@ def chat_endpoint(message: Message):
     "/chat/document",
     dependencies=[Depends(enforce_expensive_endpoint_rate_limit)],
 )
-def chat_with_document(request: DocumentQuestion):
+def chat_with_document(
+    request: DocumentQuestion,
+    session_id: str = Depends(get_active_session_id),
+):
     question = request.message
     answer, cited_results = _run_rag(
         question=question,
         endpoint="/chat/document",
+        session_id=session_id,
         document_id=request.document_id,
     )
 
