@@ -3,6 +3,7 @@ import { AppShell } from "./components/AppShell";
 import { ChatPanel } from "./components/ChatPanel";
 import { DocumentList } from "./components/DocumentList";
 import { DocumentUpload } from "./components/DocumentUpload";
+import { RetrievalPanel } from "./components/RetrievalPanel";
 import { useChat } from "./hooks/useChat";
 import { useDocuments } from "./hooks/useDocuments";
 import type { ChatMode } from "./types/api";
@@ -79,6 +80,7 @@ export default function App() {
               void refreshDocuments().catch(() => undefined);
             }}
           />
+          <RetrievalPanel />
         </aside>
 
         <ChatPanel
