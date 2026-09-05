@@ -26,6 +26,10 @@ export default function App() {
   const [activeDocumentId, setActiveDocumentId] = useState<string | null>(
     null,
   );
+  const usedPages = documents.reduce(
+    (total, document) => total + (document.page_count ?? 0),
+    0,
+  );
 
   useEffect(() => {
     if (documents.length === 0) {
@@ -67,7 +71,10 @@ export default function App() {
     <AppShell>
       <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
         <aside className="space-y-6">
-          <DocumentUpload onUploaded={addDocument} />
+          <DocumentUpload
+            onUploaded={addDocument}
+            usedPages={usedPages}
+          />
           <DocumentList
             documents={documents}
             activeDocumentId={activeDocumentId}

@@ -12,14 +12,17 @@ def isolated_vector_db(tmp_path, monkeypatch):
     monkeypatch.setenv("CHROMA_DB_PATH", str(db_path))
 
     from app.services import vector_db_service
+    from app.services.upload_progress_service import upload_progress_store
     from app.rate_limit import rate_limiter
 
     vector_db_service.configure_vector_db(str(db_path))
+    upload_progress_store.reset()
     rate_limiter.reset()
 
     yield
 
     vector_db_service.configure_vector_db(str(db_path))
+    upload_progress_store.reset()
     rate_limiter.reset()
 
 

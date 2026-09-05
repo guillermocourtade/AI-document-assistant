@@ -10,7 +10,7 @@ from pypdf.generic import (
     NameObject,
 )
 
-from app.services.vector_db_service import get_collection
+from app.services.vector_db_service import get_collection, save_chunks
 
 
 def build_two_page_pdf() -> bytes:
@@ -64,6 +64,9 @@ def test_upload_persists_page_aware_metadata(
 
     response = client.post(
         "/upload",
+        headers={
+            "X-Upload-ID": "22222222-2222-4222-8222-222222222222",
+        },
         files={
             "file": (
                 filename,
@@ -83,6 +86,7 @@ def test_upload_persists_page_aware_metadata(
         "document_id": document_id,
         "filename": filename,
         "chunks_saved": 2,
+        "page_count": 2,
         "duplicate": False,
     }
 
@@ -101,6 +105,7 @@ def test_upload_persists_page_aware_metadata(
 
     assert {metadata["page_number"] for metadata in metadatas} == {1, 2}
     assert {metadata["page"] for metadata in metadatas} == {1, 2}
+    assert {metadata["page_count"] for metadata in metadatas} == {2}
     assert {metadata["session_id"] for metadata in metadatas} == {
         "11111111-1111-4111-8111-111111111111"
     }
@@ -124,6 +129,17 @@ def test_upload_persists_page_aware_metadata(
     assert len(expires_at_values) == 1
     assert expires_at_values.pop() > created_at_values.pop()
 
+    progress_response = client.get(
+        "/upload-progress/22222222-2222-4222-8222-222222222222"
+    )
+    assert progress_response.status_code == 200
+    assert progress_response.json() == {
+        "status": "complete",
+        "progress": 100,
+        "phase": "Documento listo",
+        "detail": "El documento terminó de procesarse.",
+    }
+
 
 def test_upload_rejects_spoofed_pdf_with_safe_error(
     client: TestClient,
@@ -132,6 +148,9 @@ def test_upload_rejects_spoofed_pdf_with_safe_error(
 
     response = client.post(
         "/upload",
+        headers={
+            "X-Upload-ID": "33333333-3333-4333-8333-333333333333",
+        },
         files={
             "file": (
                 "spoofed.pdf",
@@ -150,6 +169,28 @@ def test_upload_rejects_spoofed_pdf_with_safe_error(
     }
     assert "must-not-leak" not in response.text
     assert "Traceback" not in response.text
+
+    progress_response = client.get(
+        "/upload-progress/33333333-3333-4333-8333-333333333333"
+    )
+    assert progress_response.json() == {
+        "status": "failed",
+        "progress": 0,
+        "phase": "Procesamiento interrumpido",
+        "detail": "No se pudo completar el procesamiento del documento.",
+    }
+
+
+def test_upload_progress_is_scoped_to_session(client: TestClient) -> None:
+    response = client.get(
+        "/upload-progress/44444444-4444-4444-8444-444444444444"
+    )
+
+    assert response.status_code == 404
+    assert response.json()["error"] == {
+        "code": "upload_progress_not_found",
+        "message": "No se encontró progreso para esta carga.",
+    }
 
 
 def test_upload_rejects_pdf_over_configured_size(
@@ -199,5 +240,48 @@ def test_upload_rejects_pdf_over_configured_page_limit(
         "code": "invalid_document",
         "message": (
             "El archivo PDF excede el número máximo de páginas permitido."
+        ),
+    }
+
+
+def test_upload_rejects_pdf_that_exceeds_session_page_quota(
+    client: TestClient,
+    monkeypatch,
+) -> None:
+    save_chunks(
+        chunks_with_embeddings=[
+            {
+                "text": "Contenido existente suficientemente largo.",
+                "page_number": 1,
+                "embedding": [0.1, 0.2],
+            }
+        ],
+        filename="existente.pdf",
+        file_hash="hash-existente",
+        session_id="11111111-1111-4111-8111-111111111111",
+        page_count=299,
+    )
+    monkeypatch.setattr(
+        "app.routers.documents.PDF_MAX_TOTAL_PAGES",
+        300,
+    )
+
+    response = client.post(
+        "/upload",
+        files={
+            "file": (
+                "excede-cuota.pdf",
+                build_two_page_pdf(),
+                "application/pdf",
+            )
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"] == {
+        "code": "document_page_limit_exceeded",
+        "message": (
+            "Esta carga superaría el límite de 300 páginas activas por "
+            "sesión. Actualmente hay 299 páginas y quedan 1 disponibles."
         ),
     }

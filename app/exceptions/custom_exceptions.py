@@ -30,6 +30,20 @@ class EmptyDocumentError(AppError):
     error_code = "empty_document"
 
 
+class DocumentPageLimitExceededError(AppError):
+    """Se produce cuando una sesión excede su cuota de páginas activas."""
+
+    status_code = 400
+    error_code = "document_page_limit_exceeded"
+
+
+class UploadProgressNotFoundError(AppError):
+    """Se produce cuando no existe progreso para una carga de la sesión."""
+
+    status_code = 404
+    error_code = "upload_progress_not_found"
+
+
 class DocumentNotFoundError(AppError):
     """Se produce cuando no existe un documento con el ID solicitado."""
 

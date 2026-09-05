@@ -27,6 +27,7 @@ export function useDocuments() {
         document_id: response.document_id,
         filename: response.filename,
         chunks_saved: response.chunks_saved,
+        page_count: response.page_count,
         uploaded_at: new Date().toISOString(),
       };
 

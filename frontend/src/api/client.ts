@@ -8,6 +8,7 @@ import type {
   DocumentsResponse,
   SearchResponse,
   UploadDocumentResponse,
+  UploadProcessingProgress,
 } from "../types/api";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
@@ -93,7 +94,9 @@ export const api = {
 
   uploadDocument(
     file: File,
+    uploadId: string,
     onProgress?: (progress: number) => void,
+    onProcessingStart?: () => void,
   ): Promise<UploadDocumentResponse> {
     return new Promise((resolve, reject) => {
       const formData = new FormData();
@@ -102,6 +105,7 @@ export const api = {
       const xhr = new XMLHttpRequest();
       xhr.open("POST", buildUrl("/upload"));
       xhr.setRequestHeader("X-Session-ID", getSessionId());
+      xhr.setRequestHeader("X-Upload-ID", uploadId);
 
       xhr.upload.onprogress = (event) => {
         if (!event.lengthComputable || !onProgress) {
@@ -109,6 +113,11 @@ export const api = {
         }
 
         onProgress(Math.round((event.loaded / event.total) * 100));
+      };
+
+      xhr.upload.onload = () => {
+        onProgress?.(100);
+        onProcessingStart?.();
       };
 
       xhr.onload = () => {
@@ -145,5 +154,9 @@ export const api = {
 
       xhr.send(formData);
     });
+  },
+
+  getUploadProgress(uploadId: string): Promise<UploadProcessingProgress> {
+    return request<UploadProcessingProgress>(`/upload-progress/${uploadId}`);
   },
 };

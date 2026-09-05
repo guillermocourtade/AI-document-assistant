@@ -18,7 +18,15 @@ export type UploadDocumentResponse = {
   document_id: string;
   filename: string;
   chunks_saved: number;
+  page_count: number;
   duplicate?: boolean;
+};
+
+export type UploadProcessingProgress = {
+  status: "processing" | "complete" | "failed";
+  progress: number;
+  phase: string;
+  detail: string;
 };
 
 export type DocumentsResponse = {
@@ -56,6 +64,7 @@ export type UploadedDocument = {
   document_id: string;
   filename: string;
   chunks_saved: number;
+  page_count?: number;
   uploaded_at?: string;
   created_at?: string;
   expires_at?: string;

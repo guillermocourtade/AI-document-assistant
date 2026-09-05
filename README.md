@@ -11,6 +11,7 @@ The project was built with a production-oriented approach: typed API contracts, 
 ## Features
 
 - PDF upload and validation
+- Live upload and document-processing progress
 - Page-aware text extraction and chunking
 - OpenAI embeddings
 - Persistent vector storage with ChromaDB
@@ -19,7 +20,7 @@ The project was built with a production-oriented approach: typed API contracts, 
 - Source citations with page numbers
 - Backend validation of model-generated citations
 - Session-scoped SHA-256 document deduplication
-- Per-browser-session document isolation
+- Per-browser document isolation
 - Automatic document expiration and cleanup
 - Retrieval debugging endpoint
 - Reproducible retrieval and citation evaluation
@@ -131,6 +132,7 @@ file_hash
 chunk_index
 page
 page_number
+page_count
 session_id
 created_at
 expires_at
@@ -291,10 +293,12 @@ Uploaded PDFs are checked for:
 Default limits:
 
 PDF_MAX_SIZE_BYTES=10485760
-PDF_MAX_PAGES=100
+PDF_MAX_PAGES=300
+PDF_MAX_TOTAL_PAGES=300
 
-Document access requires a UUID in the `X-Session-ID` header. Every list,
-deduplication, existence check and retrieval query is scoped to that session.
+Document access requires a UUID in the `X-Session-ID` header. The frontend
+persists this ID in the browser so tabs share the same document quota. Every
+list, deduplication, existence check and retrieval query is scoped to that ID.
 Documents expire after `DOCUMENT_TTL_HOURS` (24 hours by default), and expired
 chunks are cleaned before document and chat operations.
 
@@ -326,6 +330,7 @@ GET /about
 Documents:
 
 GET /documents
+GET /upload-progress/{upload_id}
 POST /upload
 
 Chat:
@@ -388,7 +393,8 @@ OPENAI_API_KEY=your_api_key
 ALLOWED_ORIGINS=http://localhost:5173
 CHROMA_DB_PATH=./chroma_db
 PDF_MAX_SIZE_BYTES=10485760
-PDF_MAX_PAGES=100
+PDF_MAX_PAGES=300
+PDF_MAX_TOTAL_PAGES=300
 RATE_LIMIT_WINDOW_SECONDS=60
 UPLOAD_RATE_LIMIT_REQUESTS=5
 CHAT_RATE_LIMIT_REQUESTS=20

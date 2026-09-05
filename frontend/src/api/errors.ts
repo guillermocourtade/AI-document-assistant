@@ -58,6 +58,7 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
       invalid_document: error.message,
       document_processing_error: error.message,
       empty_document: error.message,
+      document_page_limit_exceeded: error.message,
       rate_limit_exceeded: error.message,
       validation_error: "Revisa los datos enviados e inténtalo de nuevo.",
       document_not_found:

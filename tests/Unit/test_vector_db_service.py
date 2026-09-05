@@ -2,13 +2,16 @@ import pytest
 from datetime import datetime, timezone
 
 from app.exceptions.custom_exceptions import (
+    DocumentPageLimitExceededError,
     DocumentNotFoundError,
 )
 from app.services.vector_db_service import (
     cleanup_expired_documents,
     count_document_chunks,
+    count_session_pages,
     find_document_by_hash,
     list_documents,
+    reserve_session_page_capacity,
     save_chunks,
     search_similar_chunks,
     search_similar_chunks_with_metadata,
@@ -202,6 +205,7 @@ def test_save_chunks_persists_page_number_with_existing_metadata(
             "chunk_index": 0,
             "page": 2,
             "page_number": 2,
+            "page_count": 3,
             "created_at": "2026-01-01T00:00:00+00:00",
             "expires_at": "2026-01-02T00:00:00+00:00",
         },
@@ -213,10 +217,44 @@ def test_save_chunks_persists_page_number_with_existing_metadata(
             "chunk_index": 1,
             "page": 3,
             "page_number": 3,
+            "page_count": 3,
             "created_at": "2026-01-01T00:00:00+00:00",
             "expires_at": "2026-01-02T00:00:00+00:00",
         },
     ]
+
+
+def test_count_session_pages_counts_each_document_once_and_supports_legacy(
+    monkeypatch,
+):
+    fake_results = {
+        "metadatas": [
+            {"document_id": "documento-1", "page_count": 8, "page": 1},
+            {"document_id": "documento-1", "page_count": 8, "page": 8},
+            {"document_id": "documento-2", "page_number": 2},
+            {"document_id": "documento-2", "page_number": 5},
+        ]
+    }
+    monkeypatch.setattr(
+        "app.services.vector_db_service.get_collection",
+        lambda: FakeCollection(fake_results),
+    )
+
+    assert count_session_pages(SESSION_ID) == 13
+
+
+def test_reserve_session_page_capacity_rejects_excess(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.vector_db_service.count_session_pages",
+        lambda session_id: 299,
+    )
+
+    with pytest.raises(
+        DocumentPageLimitExceededError,
+        match="quedan 1 disponibles",
+    ):
+        with reserve_session_page_capacity(SESSION_ID, 2, 300):
+            pass
 
 
 def test_search_raises_when_document_does_not_exist(

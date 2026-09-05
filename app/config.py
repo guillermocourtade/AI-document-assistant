@@ -119,7 +119,12 @@ PDF_MAX_SIZE_BYTES = _positive_int_from_env(
 
 PDF_MAX_PAGES = _positive_int_from_env(
     "PDF_MAX_PAGES",
-    100,
+    300,
+)
+
+PDF_MAX_TOTAL_PAGES = _positive_int_from_env(
+    "PDF_MAX_TOTAL_PAGES",
+    300,
 )
 
 RATE_LIMIT_WINDOW_SECONDS = _positive_float_from_env(
