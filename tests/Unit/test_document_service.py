@@ -123,7 +123,7 @@ def test_validate_pdf_restores_stream_position():
     file = FakeUploadFile(build_pdf())
     file.file.seek(3)
 
-    validate_pdf(file)
+    assert validate_pdf(file) == 1
 
     assert file.file.tell() == 3
 
@@ -174,6 +174,7 @@ def test_split_text_rejects_invalid_overlap():
 def test_extract_pages_keeps_human_page_numbers(
     monkeypatch,
 ):
+    progress_updates = []
     fake_reader = FakeReader(
         [
             FakePage("Texto suficientemente largo en la primera página."),
@@ -193,7 +194,12 @@ def test_extract_pages_keeps_human_page_numbers(
         {"file": object()},
     )()
 
-    assert extract_pages_from_pdf(file) == [
+    assert extract_pages_from_pdf(
+        file,
+        on_progress=lambda current, total: progress_updates.append(
+            (current, total)
+        ),
+    ) == [
         {
             "text": "Texto suficientemente largo en la primera página.",
             "page_number": 1,
@@ -203,6 +209,7 @@ def test_extract_pages_keeps_human_page_numbers(
             "page_number": 3,
         },
     ]
+    assert progress_updates == [(1, 3), (2, 3), (3, 3)]
 
 
 def test_extract_pages_preserves_processing_error(
@@ -288,6 +295,7 @@ def test_generate_embeddings_keeps_page_number_and_embeds_once(
     monkeypatch,
 ):
     embedded_texts = []
+    progress_updates = []
 
     def fake_generate_embedding(text):
         embedded_texts.append(text)
@@ -302,10 +310,14 @@ def test_generate_embeddings_keeps_page_number_and_embeds_once(
         [
             {"text": "chunk uno", "page_number": 1},
             {"text": "chunk dos", "page_number": 2},
-        ]
+        ],
+        on_progress=lambda current, total: progress_updates.append(
+            (current, total)
+        ),
     )
 
     assert embedded_texts == ["chunk uno", "chunk dos"]
+    assert progress_updates == [(1, 2), (2, 2)]
     assert result == [
         {
             "text": "chunk uno",

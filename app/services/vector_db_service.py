@@ -1,11 +1,14 @@
 import os
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
+from threading import Lock
 
 import chromadb
 
 from app.config import DOCUMENT_TTL_HOURS
 from app.exceptions.custom_exceptions import (
+    DocumentPageLimitExceededError,
     DocumentNotFoundError,
     VectorDatabaseError,
 )
@@ -16,6 +19,8 @@ from app.services.openai_service import generate_embedding
 _client = None
 _collection = None
 _db_path = os.getenv("CHROMA_DB_PATH", "./chroma_db")
+_page_quota_lock = Lock()
+_pending_pages_by_session: dict[str, int] = {}
 
 
 def configure_vector_db(path: str) -> None:
@@ -24,6 +29,9 @@ def configure_vector_db(path: str) -> None:
     _db_path = path
     _client = None
     _collection = None
+
+    with _page_quota_lock:
+        _pending_pages_by_session.clear()
 
 
 def get_collection():
@@ -159,6 +167,86 @@ def count_document_chunks(document_id: str, session_id: str) -> int:
     return len(results.get("ids", []))
 
 
+def _page_counts_by_document(metadatas: list[dict | None]) -> dict[str, int]:
+    page_counts: dict[str, int] = {}
+
+    for metadata in metadatas:
+        if not metadata:
+            continue
+
+        document_id = metadata.get("document_id")
+        if not isinstance(document_id, str):
+            continue
+
+        page_count = metadata.get("page_count")
+        if not isinstance(page_count, int) or isinstance(page_count, bool):
+            page_count = metadata.get("page", metadata.get("page_number"))
+
+        if (
+            isinstance(page_count, int)
+            and not isinstance(page_count, bool)
+            and page_count > 0
+        ):
+            page_counts[document_id] = max(
+                page_counts.get(document_id, 0),
+                page_count,
+            )
+
+    return page_counts
+
+
+def count_session_pages(session_id: str) -> int:
+    try:
+        results = get_collection().get(
+            where=_session_filter(session_id),
+            include=["metadatas"],
+        )
+    except Exception as exception:
+        logger.exception("Error contando páginas de la sesión.")
+        raise VectorDatabaseError(
+            "No fue posible consultar la cuota de páginas de la sesión."
+        ) from exception
+
+    return sum(
+        _page_counts_by_document(results.get("metadatas", [])).values()
+    )
+
+
+@contextmanager
+def reserve_session_page_capacity(
+    session_id: str,
+    page_count: int,
+    max_total_pages: int,
+):
+    with _page_quota_lock:
+        stored_pages = count_session_pages(session_id)
+        pending_pages = _pending_pages_by_session.get(session_id, 0)
+        used_pages = stored_pages + pending_pages
+
+        if used_pages + page_count > max_total_pages:
+            available_pages = max(max_total_pages - used_pages, 0)
+            raise DocumentPageLimitExceededError(
+                "Esta carga superaría el límite de "
+                f"{max_total_pages} páginas activas por sesión. "
+                f"Actualmente hay {used_pages} páginas y quedan "
+                f"{available_pages} disponibles."
+            )
+
+        _pending_pages_by_session[session_id] = pending_pages + page_count
+
+    try:
+        yield
+    finally:
+        with _page_quota_lock:
+            remaining_pages = (
+                _pending_pages_by_session.get(session_id, 0) - page_count
+            )
+            if remaining_pages > 0:
+                _pending_pages_by_session[session_id] = remaining_pages
+            else:
+                _pending_pages_by_session.pop(session_id, None)
+
+
 def list_documents(session_id: str) -> list[dict]:
     try:
         results = get_collection().get(
@@ -190,6 +278,16 @@ def list_documents(session_id: str) -> list[dict]:
         )
         document["chunks_saved"] += 1
 
+        page_count = metadata.get("page_count")
+        if not isinstance(page_count, int) or isinstance(page_count, bool):
+            page_count = metadata.get("page", metadata.get("page_number"))
+
+        if isinstance(page_count, int) and not isinstance(page_count, bool):
+            document["page_count"] = max(
+                document.get("page_count", 0),
+                page_count,
+            )
+
     return list(documents_by_id.values())
 
 
@@ -199,6 +297,7 @@ def save_chunks(
     file_hash: str,
     session_id: str,
     created_at: datetime | None = None,
+    page_count: int | None = None,
 ) -> str:
     document_id = str(uuid.uuid4())
     creation_time = created_at or datetime.now(timezone.utc)
@@ -208,6 +307,10 @@ def save_chunks(
     expiration_time = creation_time + timedelta(hours=DOCUMENT_TTL_HOURS)
     created_at_value = _utc_timestamp(creation_time)
     expires_at_value = _utc_timestamp(expiration_time)
+    document_page_count = page_count or max(
+        (item["page_number"] for item in chunks_with_embeddings),
+        default=0,
+    )
 
     ids: list[str] = []
     documents: list[str] = []
@@ -227,6 +330,7 @@ def save_chunks(
                 "chunk_index": index,
                 "page": item["page_number"],
                 "page_number": item["page_number"],
+                "page_count": document_page_count,
                 "created_at": created_at_value,
                 "expires_at": expires_at_value,
             }

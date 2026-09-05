@@ -1,4 +1,5 @@
 import hashlib
+from collections.abc import Callable
 
 from pypdf import PdfReader
 
@@ -24,7 +25,7 @@ def calculate_file_hash(file) -> str:
     return file_hash
 
 
-def validate_pdf(file) -> None:
+def validate_pdf(file) -> int:
     if file.content_type != "application/pdf":
         logger.warning(
             "Se rechazó un archivo porque su tipo declarado no es PDF."
@@ -73,6 +74,8 @@ def validate_pdf(file) -> None:
                 "El archivo PDF excede el número máximo de páginas "
                 "permitido."
             )
+
+        return page_count
 
     except InvalidDocumentError:
         raise
@@ -169,6 +172,7 @@ def split_text(
 
 def generate_embeddings(
     chunks: list[dict],
+    on_progress: Callable[[int, int], None] | None = None,
 ) -> list[dict]:
     logger.info(
         "Se inició la generación de embeddings para %d chunks.",
@@ -178,7 +182,9 @@ def generate_embeddings(
     embeddings: list[dict] = []
 
     try:
-        for chunk in chunks:
+        total_chunks = len(chunks)
+
+        for index, chunk in enumerate(chunks, start=1):
             embedding = generate_embedding(chunk["text"])
 
             embeddings.append(
@@ -188,6 +194,9 @@ def generate_embeddings(
                     "embedding": embedding,
                 }
             )
+
+            if on_progress is not None:
+                on_progress(index, total_chunks)
 
     except Exception:
         logger.error(
@@ -203,7 +212,10 @@ def generate_embeddings(
     return embeddings
 
 
-def extract_pages_from_pdf(file) -> list[dict]:
+def extract_pages_from_pdf(
+    file,
+    on_progress: Callable[[int, int], None] | None = None,
+) -> list[dict]:
     logger.info(
         "Se inició la extracción de texto del PDF."
     )
@@ -212,6 +224,7 @@ def extract_pages_from_pdf(file) -> list[dict]:
         reader = PdfReader(file.file)
 
         pages: list[dict] = []
+        total_pages = len(reader.pages)
 
         for page_number, page in enumerate(reader.pages, start=1):
             page_text = page.extract_text()
@@ -223,6 +236,9 @@ def extract_pages_from_pdf(file) -> list[dict]:
                         "page_number": page_number,
                     }
                 )
+
+            if on_progress is not None:
+                on_progress(page_number, total_pages)
 
         text = "\n".join(
             page["text"] for page in pages

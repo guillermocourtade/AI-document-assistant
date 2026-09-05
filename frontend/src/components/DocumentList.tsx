@@ -24,7 +24,7 @@ export function DocumentList({
           <h2 className="text-sm font-semibold text-slate-950">
             Documentos subidos
           </h2>
-          <p className="text-xs text-slate-500">Disponibles en esta sesión</p>
+          <p className="text-xs text-slate-500">Disponibles en este navegador</p>
         </div>
         <button
           type="button"
@@ -73,6 +73,9 @@ export function DocumentList({
                         {document.filename}
                       </span>
                       <span className="mt-1 block text-xs text-slate-500">
+                        {document.page_count
+                          ? `${document.page_count} páginas · `
+                          : ""}
                         {document.chunks_saved} fragmentos procesados
                       </span>
                     </span>

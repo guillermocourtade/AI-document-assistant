@@ -1,21 +1,37 @@
-import { ShieldCheck, UploadCloud } from "lucide-react";
+import { Loader2, ShieldCheck, UploadCloud } from "lucide-react";
 import { useRef, useState } from "react";
 import { api } from "../api/client";
 import { getFriendlyErrorMessage } from "../api/errors";
-import type { UploadDocumentResponse } from "../types/api";
-import { DOCUMENT_TTL_HOURS } from "../config";
+import type {
+  UploadDocumentResponse,
+  UploadProcessingProgress,
+} from "../types/api";
+import {
+  DOCUMENT_TTL_HOURS,
+  PDF_MAX_PAGES,
+  PDF_MAX_TOTAL_PAGES,
+} from "../config";
 
 type DocumentUploadProps = {
   onUploaded: (response: UploadDocumentResponse) => void;
+  usedPages: number;
 };
 
-export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
+type UploadPhase = "idle" | "uploading" | "processing";
+
+export function DocumentUpload({
+  onUploaded,
+  usedPages,
+}: DocumentUploadProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploadPhase, setUploadPhase] = useState<UploadPhase>("idle");
   const [progress, setProgress] = useState(0);
+  const [processingProgress, setProcessingProgress] =
+    useState<UploadProcessingProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const isBusy = uploadPhase !== "idle";
 
   const uploadFile = async (file: File) => {
     setError(null);
@@ -26,11 +42,50 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
       return;
     }
 
-    setIsUploading(true);
+    setUploadPhase("uploading");
     setProgress(0);
+    setProcessingProgress(null);
+
+    const uploadId = crypto.randomUUID();
+    let shouldPoll = false;
+    let pollingTimer: number | undefined;
+
+    const pollProcessingProgress = async () => {
+      if (!shouldPoll) {
+        return;
+      }
+
+      try {
+        const currentProgress = await api.getUploadProgress(uploadId);
+        setProcessingProgress(currentProgress);
+      } catch {
+        // La primera consulta puede adelantarse al inicio del backend.
+      }
+
+      if (shouldPoll) {
+        pollingTimer = window.setTimeout(pollProcessingProgress, 300);
+      }
+    };
+
+    const startProcessingProgress = () => {
+      setUploadPhase("processing");
+      setProcessingProgress({
+        status: "processing",
+        progress: 0,
+        phase: "Preparando documento",
+        detail: "Esperando el inicio del procesamiento.",
+      });
+      shouldPoll = true;
+      void pollProcessingProgress();
+    };
 
     try {
-      const response = await api.uploadDocument(file, setProgress);
+      const response = await api.uploadDocument(
+        file,
+        uploadId,
+        setProgress,
+        startProcessingProgress,
+      );
       onUploaded(response);
       setProgress(100);
       setSuccess(
@@ -41,13 +96,17 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
     } catch (requestError) {
       setError(getFriendlyErrorMessage(requestError));
     } finally {
-      setIsUploading(false);
+      shouldPoll = false;
+      if (pollingTimer !== undefined) {
+        window.clearTimeout(pollingTimer);
+      }
+      setUploadPhase("idle");
     }
   };
 
   const handleFiles = (files: FileList | null) => {
     const file = files?.[0];
-    if (file) {
+    if (file && !isBusy) {
       void uploadFile(file);
     }
   };
@@ -64,6 +123,7 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
       <div className="p-4">
         <button
           type="button"
+          disabled={isBusy}
           onClick={() => inputRef.current?.click()}
           onDragEnter={(event) => {
             event.preventDefault();
@@ -76,7 +136,7 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
             setIsDragging(false);
             handleFiles(event.dataTransfer.files);
           }}
-          className={`flex w-full flex-col items-center justify-center rounded-lg border border-dashed px-4 py-8 text-center transition ${
+          className={`flex w-full flex-col items-center justify-center rounded-lg border border-dashed px-4 py-8 text-center transition disabled:cursor-wait disabled:opacity-70 ${
             isDragging
               ? "border-cyan-500 bg-cyan-50 ring-4 ring-cyan-100"
               : "border-indigo-200 bg-gradient-to-br from-indigo-50/70 to-cyan-50/60 hover:border-indigo-400"
@@ -89,7 +149,7 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
             Arrastra un PDF o selecciónalo
           </span>
           <span className="mt-1 text-xs text-slate-500">
-            Se guardará como documento disponible en esta pestaña.
+            Se guardará como documento disponible en este navegador.
           </span>
         </button>
 
@@ -97,29 +157,61 @@ export function DocumentUpload({ onUploaded }: DocumentUploadProps) {
           ref={inputRef}
           type="file"
           accept="application/pdf"
+          disabled={isBusy}
           className="hidden"
           onChange={(event) => handleFiles(event.target.files)}
         />
 
+        <p className="mt-3 text-xs leading-5 text-slate-500">
+          Máximo {PDF_MAX_PAGES} páginas por PDF y {PDF_MAX_TOTAL_PAGES}{" "}
+          páginas activas en total. Uso actual: {usedPages}/
+          {PDF_MAX_TOTAL_PAGES} páginas.
+        </p>
+
         <div className="mt-4 flex gap-3 rounded-lg border border-sky-100 bg-sky-50/80 px-3 py-3 text-sky-900">
           <ShieldCheck size={17} className="mt-0.5 shrink-0 text-sky-600" />
           <p className="text-xs leading-5">
-            Tus documentos son temporales y solo están disponibles durante
-            esta sesión. Se eliminan automáticamente después de{" "}
+            Tus documentos son temporales y solo están disponibles en este
+            navegador. Se eliminan automáticamente después de{" "}
             {DOCUMENT_TTL_HOURS} horas. No subas información sensible.
           </p>
         </div>
 
-        {isUploading && (
+        {uploadPhase === "uploading" && (
           <div className="mt-4">
             <div className="flex items-center justify-between text-xs text-slate-500">
-              <span>Subiendo y procesando</span>
-              <span>{progress}%</span>
+              <span>Subiendo archivo</span>
+              <span>{progress}% enviado</span>
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
               <div
                 className="h-full rounded-full bg-cyan-500 transition-all"
                 style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {uploadPhase === "processing" && (
+          <div
+            className="mt-4 rounded-lg border border-cyan-100 bg-cyan-50/70 p-3"
+            role="status"
+          >
+            <div className="flex items-center gap-2 text-sm font-medium text-cyan-900">
+              <Loader2 size={16} className="animate-spin" />
+              {processingProgress?.phase ?? "Procesando documento"}
+              <span className="ml-auto tabular-nums">
+                {processingProgress?.progress ?? 0}%
+              </span>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-cyan-800">
+              {processingProgress?.detail ??
+                "Extrayendo páginas y creando el índice para las búsquedas."}
+            </p>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-cyan-100">
+              <div
+                className="h-full rounded-full bg-cyan-500 transition-all duration-300"
+                style={{ width: `${processingProgress?.progress ?? 0}%` }}
               />
             </div>
           </div>
