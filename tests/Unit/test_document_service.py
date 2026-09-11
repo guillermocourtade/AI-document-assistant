@@ -279,6 +279,21 @@ def test_split_pages_never_crosses_page_boundaries():
     ]
 
 
+def test_split_pages_discards_whitespace_only_chunks():
+    chunks = split_pages(
+        pages=[
+            {"text": "abcde \n\t", "page_number": 1},
+            {"text": "   \n\t", "page_number": 2},
+        ],
+        chunk_size=5,
+        overlap=0,
+    )
+
+    assert chunks == [
+        {"text": "abcde", "page_number": 1},
+    ]
+
+
 def test_split_pages_rejects_invalid_overlap():
     with pytest.raises(
         ValueError,

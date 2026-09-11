@@ -296,12 +296,18 @@ def split_pages(
 
         while start < len(text):
             end = start + chunk_size
-            chunks.append(
-                {
-                    "text": text[start:end],
-                    "page_number": page_number,
-                }
-            )
+            chunk_text = text[start:end]
+
+            # PDF extraction can produce pages or trailing fragments made
+            # entirely of whitespace. They have no retrieval value and the
+            # embeddings API rejects empty input after normalization.
+            if chunk_text.strip():
+                chunks.append(
+                    {
+                        "text": chunk_text,
+                        "page_number": page_number,
+                    }
+                )
 
             start += chunk_size - overlap
 

@@ -1,587 +1,331 @@
 # AI Document Assistant
 
-AI-powered document assistant built with FastAPI, OpenAI, ChromaDB and React.
+A full-stack Retrieval-Augmented Generation (RAG) application for asking questions about PDF documents and receiving answers with page-level citations.
 
-Upload PDF documents, index their contents into a persistent vector database, and ask questions using a Retrieval-Augmented Generation (RAG) pipeline with page-aware retrieval and verifiable citations.
+The project combines a React interface, a FastAPI API, OpenAI models, and a persistent ChromaDB index. It is designed as a production-minded reference implementation: document and session isolation, citation validation, retrieval evaluation, structured observability, rate limiting, prompt-injection defenses, automated tests, and Docker support are included.
 
-The project was built with a production-oriented approach: typed API contracts, isolated business logic, automated tests, retrieval evaluation, structured observability, security controls, Docker and persistent vector storage.
+## Highlights
 
----
+- Upload and validate text-based PDF documents.
+- Follow extraction and indexing progress in real time.
+- Keep chunk provenance at the PDF-page level.
+- Search one document or all documents in the active browser session.
+- Generate answers with citations such as `[p. 13]`.
+- Validate every model-generated citation against retrieved evidence.
+- Prevent duplicate indexing with session-scoped SHA-256 hashes.
+- Automatically expire documents after a configurable TTL.
+- Measure retrieval quality, citation accuracy, latency, and token usage.
 
-## Features
+## Demo workflow
 
-- PDF upload and validation
-- Live upload and document-processing progress
-- Page-aware text extraction and chunking
-- OpenAI embeddings
-- Persistent vector storage with ChromaDB
-- Retrieval-Augmented Generation (RAG)
-- Document-specific and multi-document chat
-- Source citations with page numbers
-- Backend validation of model-generated citations
-- Session-scoped SHA-256 document deduplication
-- Per-browser document isolation
-- Automatic document expiration and cleanup
-- Retrieval debugging endpoint
-- Reproducible retrieval and citation evaluation
-- Structured JSON observability
-- Rate limiting
-- OpenAI timeout and concurrency control
-- Prompt-injection defenses
-- Docker support
-- Persistent ChromaDB storage using Docker volumes
-- React + TypeScript frontend
-- Automated tests and CI
-
----
+1. The browser creates a UUID and sends it as `X-Session-ID`.
+2. The user uploads a PDF.
+3. The API extracts text page by page, creates overlapping chunks, and generates embeddings.
+4. ChromaDB stores the embeddings and document metadata for that session.
+5. A question is embedded and matched against the six closest chunks.
+6. `gpt-4.1-mini` answers from the retrieved context.
+7. The API accepts only citations that point to chunks actually retrieved.
 
 ## Architecture
 
-                    ┌─────────────────────┐
-                    │   React Frontend    │
-                    │ Vite + TypeScript   │
-                    └──────────┬──────────┘
-                               │ HTTP
-                               ▼
-                    ┌─────────────────────┐
-                    │      FastAPI        │
-                    │       Routers       │
-                    └──────────┬──────────┘
-                               │
-             ┌─────────────────┼─────────────────┐
-             ▼                 ▼                 ▼
-     Document Service    OpenAI Service    Vector DB Service
-             │                 │                 │
-             │          Embeddings / LLM        │
-             │                 │                 ▼
-             │                 │             ChromaDB
-             │                 │          Persistent Store
-             └─────────────────┴─────────────────┘
-
-Backend structure:
-
-app/
-├── config.py
-├── logger.py
-├── main.py
-├── observability.py
-├── rate_limit.py
-├── exceptions/
-│   ├── custom_exceptions.py
-│   └── handlers.py
-├── models/
-│   └── message.py
-├── routers/
-│   ├── system.py
-│   ├── chat.py
-│   └── documents.py
-└── services/
-    ├── document_service.py
-    ├── openai_service.py
-    └── vector_db_service.py
-
-frontend/
-└── src/
-    ├── api/
-    ├── components/
-    ├── hooks/
-    ├── types/
-    └── App.tsx
-
-evaluation/
-├── evaluate_citations.py
-├── benchmark_latency.py
-└── results/
-
-tests/
-├── conftest.py
-├── unit/
-└── integration/
-
-Routers handle HTTP concerns and orchestration.
-
-Services contain business logic and external integrations.
-
-This keeps OpenAI, document processing and vector database logic isolated from the HTTP layer.
-
----
-
-## How the RAG Pipeline Works
-
-### 1. Document ingestion
-
-PDF
- ↓
-Validation
- ↓
-SHA-256 deduplication
- ↓
-Page-aware text extraction
- ↓
-Chunking with overlap
- ↓
-OpenAI embeddings
- ↓
-ChromaDB
+```mermaid
+flowchart LR
+    UI[React + TypeScript] -->|HTTP + X-Session-ID| API[FastAPI]
+    API --> DOC[Document service]
+    API --> RAG[RAG orchestration]
+    DOC -->|text-embedding-3-small| OAI[OpenAI API]
+    RAG -->|question embedding| OAI
+    RAG --> DB[(ChromaDB)]
+    DOC --> DB
+    RAG -->|retrieved context / answer| OAI
+```
 
-Each chunk keeps metadata such as:
+The backend keeps HTTP orchestration in `app/routers`, business and integration logic in `app/services`, and request/response contracts in `app/models`.
 
-document_id
-filename
-file_hash
-chunk_index
-page
-page_number
-page_count
-session_id
-created_at
-expires_at
+```text
+app/                    FastAPI backend
+  routers/              System, document, and chat endpoints
+  services/             PDF, OpenAI, and vector database logic
+  models/               API data models
+frontend/               React + Vite client
+evaluation/             Retrieval, citation, generation, and latency benchmarks
+tests/                  Unit and integration tests
+```
 
-Chunks never cross page boundaries, which allows the system to preserve page-level provenance.
+## RAG design
 
-### 2. Retrieval
+### Ingestion
 
-Question
- ↓
-Question embedding
- ↓
-ChromaDB similarity search
- ↓
-Top-6 candidates
- ↓
-Distance filtering
- ↓
-Relevant chunks + metadata
+```text
+PDF validation
+  -> SHA-256 duplicate check
+  -> page-aware text extraction
+  -> 500-character chunks with 100-character overlap
+  -> text-embedding-3-small
+  -> persistent ChromaDB collection
+```
 
-Current production retrieval configuration:
+Chunks never cross page boundaries. Each stored chunk includes its document ID, filename, file hash, chunk index, page number, page count, session ID, creation time, and expiration time.
 
-Top-K: 6
-max_distance: 1.2
+This application extracts embedded text with `pypdf`; it does not currently perform OCR. Scanned image-only PDFs may therefore be rejected as empty.
 
-These values were selected through evaluation rather than intuition.
+### Retrieval and generation
 
-### 3. Answer generation
+The production retrieval configuration is:
 
-Retrieved chunks are sent to the LLM as untrusted context.
+| Setting | Value |
+|---|---:|
+| Candidates (`Top-K`) | 6 |
+| Maximum vector distance | 1.2 |
+| Generation model | `gpt-4.1-mini` |
+| Embedding model | `text-embedding-3-small` |
 
-The model returns a structured response containing:
+Retrieved text is explicitly treated as untrusted input. The model returns a structured answer and a list of source IDs; the backend maps only valid, retrieved IDs to page citations. Model-written page numbers and unknown source markers are discarded.
 
-answer
-source_ids
+## Evaluation results
 
-The backend validates every returned source_id against the chunks that were actually retrieved.
+The repository includes a reproducible 25-question ground-truth dataset covering direct questions, paraphrases, similar sections, boundary context, numeric confusion, and exact identifiers.
 
-Only validated sources are converted into visible citations such as:
+| Metric | Result |
+|---|---:|
+| Page Hit@1 | 92% |
+| Page Hit@2 | 96% |
+| Page Hit@3 | 100% |
+| MRR | 0.9533 |
+| Evidence Hit@6 | 100% (25/25) |
+| Citation Hit | 100% (25/25) |
 
-[p. 13]
+The initial Top-4 configuration reached 100% Page Hit@4 but only 96% Evidence Hit@4. The missing evidence appeared at vector rank 6, so the production configuration was changed to Top-6. A local FlashRank reranking experiment was also evaluated and rejected because it reduced overall retrieval quality.
 
-This prevents the model from creating arbitrary page citations.
+### Latency baseline
 
----
+The recorded 25-request end-to-end benchmark reports:
 
-## Retrieval Evaluation
+| Metric | Result |
+|---|---:|
+| Average latency | 2.34 s |
+| p50 | 2.28 s |
+| p95 | 3.17 s |
+| Average retrieval | 661 ms |
+| Average OpenAI generation | 1,676 ms |
+| Average input tokens | 989.08 |
+| Average output tokens | 51.68 |
 
-The project includes a reproducible benchmark containing 25 questions with page-level and evidence-level ground truth.
+Raw reports are available in [`evaluation/results`](evaluation/results), and the evaluation commands are documented in [`evaluation/README.md`](evaluation/README.md).
 
-Initial Top-4 retrieval achieved:
+## Estimated API cost
 
-Page Hit@1: 92%
-Page Hit@2: 96%
-Page Hit@3: 100%
-Page Hit@4: 100%
-MRR: 0.953333
-Evidence Hit@4: 96%
+Using the recorded average token consumption and standard API prices on September 11, 2026:
 
-One failure revealed an important distinction:
+```text
+(989.08 input tokens x $0.40/M) + (51.68 output tokens x $1.60/M)
+= approximately $0.000478 per answer
+```
 
-Retrieving the correct page does not necessarily mean retrieving the chunk containing the correct evidence.
+The query embedding adds much less than $0.000001 for a typical short question. At the measured average, generation costs are approximately:
 
-Analysis showed that the missing evidence chunk appeared at vector rank 6.
+| Questions | Estimated OpenAI cost (USD) |
+|---:|---:|
+| 1,000 | $0.48 |
+| 10,000 | $4.78 |
+| 100,000 | $47.83 |
 
-Changing retrieval from Top-4 to Top-6 produced:
+Indexing the included 17-page benchmark PDF costs approximately $0.00022-$0.00029 once. Actual cost varies with document size, prompt length, response length, retries, and future pricing. Hosting, storage, bandwidth, taxes, and payment-provider charges are not included. Check the current [OpenAI API pricing](https://openai.com/api/pricing/) before budgeting.
 
-Evidence Hit@6: 25/25 (100%)
+## Requirements
 
-without degrading Page Hit or MRR.
+- Python 3.12
+- Node.js with npm
+- An OpenAI API key
+- Docker and Docker Compose (optional)
 
-A FlashRank reranking experiment was also evaluated but rejected because it reduced overall retrieval quality.
+## Quick start
 
-This benchmark acts as a regression baseline for future retrieval changes.
+### 1. Configure the backend
 
----
+```bash
+cp .env.example .env
+```
 
-## Citation Evaluation
+Set at least the following value in `.env`:
 
-Citations are evaluated independently from retrieval.
+```dotenv
+OPENAI_API_KEY=your_api_key
+```
 
-Current recorded benchmark:
+Do not commit the populated `.env` file.
 
-Citation Hit: 25/25 (100%)
+### 2. Start the API
 
-The evaluation checks that:
+```bash
+python -m venv .venv
+```
 
-- the expected evidence was retrieved
-- the expected page was available
-- the model cited a valid retrieved source
-- fabricated source IDs were rejected
-- citations correspond to real retrieved evidence
+Activate the environment:
 
-Detailed evaluation results are stored under:
+```powershell
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+```
 
-evaluation/results/
+```bash
+# macOS or Linux
+source .venv/bin/activate
+```
 
----
+Install dependencies and run FastAPI:
 
-## Observability
+```bash
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --reload --port 8000
+```
 
-Each RAG request produces a structured event containing operational metrics such as:
+The API is available at <http://localhost:8000> and its interactive OpenAPI documentation at <http://localhost:8000/docs>.
 
-request_id
-endpoint
-status
-total latency
-retrieval latency
-OpenAI latency
-retrieved chunks
-cited source IDs
-cited pages
-model
-token usage
+### 3. Start the frontend
 
-Sensitive content is intentionally excluded.
+In a second terminal:
 
-The logs do not store:
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
 
-- user questions
-- retrieved document text
-- complete answers
-- API keys
-- environment variables
-- filenames
-- raw exception messages
+Open <http://localhost:5173>. Set `VITE_API_URL` in `frontend/.env` if the API runs at another address.
 
----
+## Docker
 
-## Performance Baseline
+The provided Compose configuration builds and runs the backend API only:
 
-A reproducible 25-question latency benchmark produced:
+```bash
+docker compose up --build
+```
 
-Average total latency: ~2.34 s
-p50: ~2.28 s
-p95: ~3.17 s
+Run it in the background and check its health with:
 
-Average retrieval: ~661 ms
-Average OpenAI: ~1676 ms
+```bash
+docker compose up -d --build
+curl http://localhost:8000/health
+```
 
-Approximate latency distribution:
+ChromaDB data is stored in the `chroma_data` named volume at `/app/chroma_db`, so it survives container recreation.
 
-Retrieval: 28.3%
-OpenAI: 71.7%
+```bash
+docker compose down
+```
 
----
+> [!WARNING]
+> `docker compose down -v` also deletes the ChromaDB volume and all indexed documents. Use it only when that deletion is intentional.
 
-## Security & Hardening
+The React frontend must still be run separately with npm or deployed as a static build.
 
-Uploaded PDFs are checked for:
+## Configuration
 
-- MIME type
-- maximum file size
-- %PDF- binary signature
-- successful parsing
-- maximum page count
+Backend defaults are defined in [`.env.example`](.env.example):
 
-Default limits:
+| Variable | Default | Purpose |
+|---|---:|---|
+| `ALLOWED_ORIGINS` | local Vite origins | Comma-separated CORS allowlist |
+| `PDF_MAX_SIZE_BYTES` | `10485760` | Maximum PDF size (10 MiB) |
+| `PDF_MAX_PAGES` | `300` | Maximum pages in one PDF |
+| `PDF_MAX_TOTAL_PAGES` | `300` | Maximum indexed pages per session |
+| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Rate-limit window |
+| `UPLOAD_RATE_LIMIT_REQUESTS` | `5` | Uploads allowed per window |
+| `CHAT_RATE_LIMIT_REQUESTS` | `20` | Shared chat requests per window |
+| `OPENAI_TIMEOUT_SECONDS` | `30` | OpenAI request timeout |
+| `OPENAI_MAX_RETRIES` | `0` | SDK retry count |
+| `OPENAI_MAX_CONCURRENCY` | `4` | Concurrent OpenAI operations |
+| `DOCUMENT_TTL_HOURS` | `24` | Document retention period |
 
-PDF_MAX_SIZE_BYTES=10485760
-PDF_MAX_PAGES=300
-PDF_MAX_TOTAL_PAGES=300
+`APP_NAME`, `APP_VERSION`, and `APP_ENV` may also be set. `CHROMA_DB_PATH` defaults to `./chroma_db`; Docker overrides it with `/app/chroma_db`.
 
-Document access requires a UUID in the `X-Session-ID` header. The frontend
-persists this ID in the browser so tabs share the same document quota. Every
-list, deduplication, existence check and retrieval query is scoped to that ID.
-Documents expire after `DOCUMENT_TTL_HOURS` (24 hours by default), and expired
-chunks are cleaned before document and chat operations.
+## API overview
 
-Retrieved document content is treated as untrusted data.
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/` | API greeting |
+| `GET` | `/health` | Health check |
+| `GET` | `/about` | Application metadata |
+| `GET` | `/documents` | List session documents |
+| `GET` | `/upload-progress/{upload_id}` | Read upload progress |
+| `POST` | `/upload` | Validate and index a PDF |
+| `POST` | `/chat` | Ask across all session documents |
+| `POST` | `/chat/document` | Ask within one document |
+| `POST` | `/search` | Inspect raw retrieval results |
 
-Trusted application instructions are separated from document content, and adversarial tests cover prompt-injection attempts.
+Document, upload-progress, search, and chat endpoints require this header:
 
-Default rate limits:
+```http
+X-Session-ID: 00000000-0000-0000-0000-000000000000
+```
 
-/upload: 5 requests / 60 seconds
-/chat and /chat/document: shared quota of 20 requests / 60 seconds
+The frontend generates and persists the UUID automatically. Controlled API failures use this shape:
 
-OpenAI protection:
-
-OPENAI_TIMEOUT_SECONDS=30
-OPENAI_MAX_RETRIES=0
-OPENAI_MAX_CONCURRENCY=4
-
----
-
-## API
-
-System:
-
-GET /
-GET /health
-GET /about
-
-Documents:
-
-GET /documents
-GET /upload-progress/{upload_id}
-POST /upload
-
-Chat:
-
-POST /chat
-POST /chat/document
-
-Retrieval debugging:
-
-POST /search
-
-All document, retrieval and chat endpoints require:
-
-X-Session-ID: <uuid>
-
-Controlled API errors use:
-
+```json
 {
   "error": {
     "code": "string",
     "message": "string"
   }
 }
+```
 
----
+## Security and privacy controls
 
-## Tech Stack
+- MIME type, file size, `%PDF-` signature, parseability, and page count validation.
+- Per-session document quotas, deduplication, listing, and retrieval.
+- Expiration and cleanup before document and chat operations.
+- Separation of trusted instructions from untrusted questions and document text.
+- Backend validation of model-returned source IDs.
+- Rate limits plus OpenAI timeout and concurrency controls.
+- No questions, document text, full answers, API keys, filenames, or raw exception messages in structured RAG logs.
 
-Backend:
-- Python
-- FastAPI
-- Pydantic
-- Uvicorn
-- OpenAI API
-- ChromaDB
-- pypdf
-- pytest
+The browser UUID provides data partitioning, not user authentication. Before exposing this service publicly, add authenticated identities and authorization, shared rate limiting for multiple workers, HTTPS, managed secret storage, and a production persistence and backup strategy.
 
-Frontend:
-- React
-- Vite
-- TypeScript
-- Tailwind CSS
+## Observability
 
-Infrastructure:
-- Docker
-- Docker Compose
-- GitHub Actions
-- Persistent Docker volumes
-
----
-
-## Environment Variables
-
-Create a .env file based on .env.example.
-
-Example:
-
-OPENAI_API_KEY=your_api_key
-ALLOWED_ORIGINS=http://localhost:5173
-CHROMA_DB_PATH=./chroma_db
-PDF_MAX_SIZE_BYTES=10485760
-PDF_MAX_PAGES=300
-PDF_MAX_TOTAL_PAGES=300
-RATE_LIMIT_WINDOW_SECONDS=60
-UPLOAD_RATE_LIMIT_REQUESTS=5
-CHAT_RATE_LIMIT_REQUESTS=20
-OPENAI_TIMEOUT_SECONDS=30
-OPENAI_MAX_RETRIES=0
-OPENAI_MAX_CONCURRENCY=4
-DOCUMENT_TTL_HOURS=24
-
-Never commit the real .env file.
-
----
-
-## Running Locally
-
-Backend:
-
-python -m venv .venv
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-
-Backend:
-http://localhost:8000
-
-Swagger:
-http://localhost:8000/docs
-
-Frontend:
-
-cd frontend
-npm install
-npm run dev
-
-Vite normally starts at:
-http://localhost:5173
-
----
-
-## Running with Docker
-
-Build and start:
-
-docker compose up --build
-
-Detached:
-
-docker compose up -d --build
-
-Health check:
-
-curl http://localhost:8000/health
-
-Docker Compose stores ChromaDB in the named volume:
-
-chroma_data
-
-mounted at:
-
-/app/chroma_db
-
-with:
-
-CHROMA_DB_PATH=/app/chroma_db
-
-Documents and embeddings therefore survive container recreation.
-
-docker compose down
-docker compose up -d
-
-WARNING:
-docker compose down -v also deletes the persistent volume and therefore removes the stored ChromaDB data. Only use -v when deleting the vector database is intentional.
-
----
-
-## Docker Build Optimization
-
-The Docker build context was reduced from approximately 487 MB to 1.02 kB by using a strict .dockerignore allowlist and copying only the backend application into the image.
-
-This prevents local artifacts such as .venv, frontend/node_modules, chroma_db, .env and evaluation data from entering the backend image.
-
----
+Every RAG request emits a structured event with its request ID, endpoint, status, total latency, retrieval latency, OpenAI latency, model, token usage, chunk count, cited source IDs, and cited pages. Sensitive request and document content is intentionally excluded.
 
 ## Testing
 
-Run:
+Run the backend suite:
 
-pytest
+```bash
+python -m pytest -q
+```
 
-Last documented hardening baseline:
+Build the frontend:
 
-122 passing tests
+```bash
+cd frontend
+npm run build
+```
 
-Tests use temporary ChromaDB storage rather than the real persistent database.
+Current verified baseline: **129 backend tests passing** and a successful production frontend build. Tests use temporary ChromaDB directories and do not modify the application's persistent collection. GitHub Actions runs the Python test suite on pushes and pull requests.
 
----
+## Current limitations
 
-## Engineering Decisions
+- The Docker setup does not package or serve the frontend.
+- ChromaDB is local and single-node; the Docker volume is not a production backup strategy.
+- Rate limiting and upload progress are in memory and are not shared across workers or replicas.
+- Session UUIDs are not authentication.
+- Only PDFs with extractable text are supported; there is no OCR pipeline.
+- OpenAI model names and retrieval thresholds are currently defined in code rather than environment variables.
 
-### Top-K and chunk overlap
+Any change to chunking, embeddings, thresholds, Top-K, or reranking should be measured against the existing evaluation baseline before replacing the production configuration.
 
-Adding chunk overlap changed vector ranking. Top-K and overlap therefore need to be evaluated together.
+## Roadmap
 
-The final Top-6 configuration was selected using an evidence-level benchmark.
-
-### Document deduplication
-
-Duplicate PDFs previously polluted ChromaDB and caused near-identical chunks to dominate retrieval.
-
-Documents are deduplicated by SHA-256 within each browser session. The same PDF
-uploaded by a different session is stored independently and never reuses the
-first session's document ID.
-
-### Isolated test database
-
-Tests use temporary ChromaDB storage instead of the application's persistent database.
-
-### Verified citations
-
-LLM-generated citations are not trusted directly.
-
-The backend validates model-returned source IDs against retrieved chunks before exposing citations to the client.
-
-### Persistent storage
-
-ChromaDB state is stored in a Docker named volume instead of the container filesystem, separating application lifecycle from data lifecycle.
-
----
-
-## Current Status
-
-The project currently includes:
-
-- Functional full-stack RAG application
-- Page-aware document ingestion
-- Persistent ChromaDB storage
-- Evidence-based retrieval configuration
-- Verified source citations
-- Retrieval and citation benchmarks
-- Structured observability
-- PDF security validation
-- Prompt-injection defenses
-- Rate limiting
-- OpenAI timeout and concurrency protection
-- Automated testing and CI
-- Dockerized backend
-- Persistent Docker volume
-
-The next major engineering milestone is a real production deployment.
-
-This requires evaluating backend hosting, frontend hosting, HTTPS, secrets management, production persistence for ChromaDB, infrastructure-level limits and multi-worker implications for the current in-memory rate limiter.
-
-The local Docker named volume should not automatically be considered the production persistence strategy.
-
----
-
-## Future Improvements
-
-- Production deployment
-- Production-grade persistent vector storage strategy
-- Shared rate limiting for multiple workers/replicas
-- Alternative reranking experiments
-- Hybrid search
-- Query rewriting
-- Retrieval quality monitoring
-- Additional RAG evaluation datasets
-
-Any retrieval change should be measured against the existing evaluation baseline before replacing the production configuration.
-
----
-
-## What I Learned
-
-This project focuses not only on integrating an LLM, but on the engineering problems around production RAG systems:
-
-- defining and preserving contracts between layers
-- debugging retrieval separately from generation
-- evaluating evidence rather than only final answers
-- understanding how chunking changes vector ranking
-- preventing duplicate data from contaminating retrieval
-- validating LLM-generated citations
-- treating retrieved documents as untrusted input
-- building reproducible RAG evaluations
-- measuring latency before optimizing
-- isolating tests from persistent application state
-- separating container lifecycle from data persistence
-
----
+- Authenticated multi-user access
+- Production deployment and managed vector persistence
+- Shared rate limiting and progress state
+- OCR support for scanned PDFs
+- Hybrid lexical/vector retrieval
+- Retrieval-quality monitoring with additional datasets
+- Model and retrieval configuration through environment variables
 
 ## License
 
-This project is currently intended for educational and portfolio purposes.
+Licensed under the [MIT License](LICENSE).
