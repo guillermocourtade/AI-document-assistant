@@ -30,6 +30,13 @@ class EmptyDocumentError(AppError):
     error_code = "empty_document"
 
 
+class UnreadableDocumentError(AppError):
+    """Se produce cuando la capa de texto del PDF está dañada."""
+
+    status_code = 422
+    error_code = "unreadable_document"
+
+
 class DocumentPageLimitExceededError(AppError):
     """Se produce cuando una sesión excede su cuota de páginas activas."""
 

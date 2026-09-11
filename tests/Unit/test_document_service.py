@@ -7,6 +7,7 @@ from app.exceptions.custom_exceptions import (
     DocumentProcessingError,
     EmptyDocumentError,
     InvalidDocumentError,
+    UnreadableDocumentError,
 )
 from app.services.document_service import (
     extract_pages_from_pdf,
@@ -257,6 +258,50 @@ def test_extract_pages_rejects_document_without_enough_text(
         match="no contiene texto suficiente",
     ):
         extract_pages_from_pdf(file)
+
+
+def test_extract_pages_rejects_corrupted_text_layer_before_chunking(
+    monkeypatch,
+):
+    corrupted_text = "\x01" * 80 + "texto aparentemente suficiente"
+    fake_reader = FakeReader([FakePage(corrupted_text)])
+
+    monkeypatch.setattr(
+        "app.services.document_service.PdfReader",
+        lambda stream: fake_reader,
+    )
+
+    file = type(
+        "FakeUploadFile",
+        (),
+        {"file": object()},
+    )()
+
+    with pytest.raises(
+        UnreadableDocumentError,
+        match="Aplica OCR",
+    ):
+        extract_pages_from_pdf(file)
+
+
+def test_extract_pages_allows_normal_line_breaks_and_tabs(monkeypatch):
+    readable_text = "Texto legible\ncon saltos\r\ny\ttabulaciones."
+    fake_reader = FakeReader([FakePage(readable_text)])
+
+    monkeypatch.setattr(
+        "app.services.document_service.PdfReader",
+        lambda stream: fake_reader,
+    )
+
+    file = type(
+        "FakeUploadFile",
+        (),
+        {"file": object()},
+    )()
+
+    assert extract_pages_from_pdf(file) == [
+        {"text": readable_text, "page_number": 1},
+    ]
 
 
 def test_split_pages_never_crosses_page_boundaries():

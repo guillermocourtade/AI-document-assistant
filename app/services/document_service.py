@@ -8,9 +8,39 @@ from app.exceptions.custom_exceptions import (
     DocumentProcessingError,
     EmptyDocumentError,
     InvalidDocumentError,
+    UnreadableDocumentError,
 )
 from app.logger import logger
 from app.services.openai_service import generate_embedding
+
+
+_ALLOWED_CONTROL_CHARACTERS = {"\n", "\r", "\t"}
+_MAX_UNEXPECTED_CONTROL_CHARACTER_RATIO = 0.05
+
+
+def validate_extracted_text_quality(text: str) -> None:
+    """Reject corrupted PDF text layers before paid embedding calls."""
+    unexpected_control_count = sum(
+        character not in _ALLOWED_CONTROL_CHARACTERS
+        and (ord(character) < 32 or 127 <= ord(character) <= 159)
+        for character in text
+    )
+    unexpected_control_ratio = unexpected_control_count / len(text)
+
+    if unexpected_control_ratio < _MAX_UNEXPECTED_CONTROL_CHARACTER_RATIO:
+        return
+
+    logger.warning(
+        "Se rechazó un PDF con una capa de texto no legible. "
+        "caracteres_control=%d, caracteres_totales=%d, proporcion=%.4f.",
+        unexpected_control_count,
+        len(text),
+        unexpected_control_ratio,
+    )
+    raise UnreadableDocumentError(
+        "El PDF contiene una capa de texto no legible. Aplica OCR o sube "
+        "una versión con texto seleccionable."
+    )
 
 
 def calculate_file_hash(file) -> str:
@@ -133,6 +163,8 @@ def extract_text_from_pdf(file) -> str:
         raise EmptyDocumentError(
             "El PDF no contiene texto suficiente para procesarse."
         )
+
+    validate_extracted_text_quality(text)
 
     logger.info(
         "La extracción terminó correctamente. Caracteres extraídos=%d.",
@@ -267,6 +299,8 @@ def extract_pages_from_pdf(
         raise EmptyDocumentError(
             "El PDF no contiene texto suficiente para procesarse."
         )
+
+    validate_extracted_text_quality(text)
 
     logger.info(
         "La extracción terminó correctamente. Caracteres extraídos=%d.",
