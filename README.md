@@ -274,7 +274,7 @@ The frontend generates and persists the UUID automatically. Controlled API failu
 
 ## Security and privacy controls
 
-- MIME type, file size, `%PDF-` signature, parseability, and page count validation.
+- MIME type, file size, `%PDF-` signature, parseability, page count, and extracted-text quality validation.
 - Per-session document quotas, deduplication, listing, and retrieval.
 - Expiration and cleanup before document and chat operations.
 - Separation of trusted instructions from untrusted questions and document text.
@@ -303,7 +303,7 @@ cd frontend
 npm run build
 ```
 
-Current verified baseline: **129 backend tests passing** and a successful production frontend build. Tests use temporary ChromaDB directories and do not modify the application's persistent collection. GitHub Actions runs the Python test suite on pushes and pull requests.
+Current verified baseline: **132 backend tests passing** and a successful production frontend build. Tests use temporary ChromaDB directories and do not modify the application's persistent collection. GitHub Actions runs the Python test suite on pushes and pull requests.
 
 ## Current limitations
 

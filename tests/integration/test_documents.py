@@ -13,7 +13,12 @@ from pypdf.generic import (
 from app.services.vector_db_service import get_collection, save_chunks
 
 
-def build_two_page_pdf() -> bytes:
+def build_two_page_pdf(
+    texts: tuple[str, str] = (
+        "Contenido suficientemente largo de la pagina uno.",
+        "Contenido suficientemente largo de la pagina dos.",
+    ),
+) -> bytes:
     writer = PdfWriter()
 
     font = DictionaryObject(
@@ -25,10 +30,7 @@ def build_two_page_pdf() -> bytes:
     )
     font_reference = writer._add_object(font)
 
-    for text in (
-        "Contenido suficientemente largo de la pagina uno.",
-        "Contenido suficientemente largo de la pagina dos.",
-    ):
+    for text in texts:
         page = writer.add_blank_page(width=612, height=792)
         page[NameObject("/Resources")] = DictionaryObject(
             {
@@ -213,6 +215,41 @@ def test_upload_rejects_pdf_over_configured_size(
         "code": "invalid_document",
         "message": "El archivo PDF excede el tamaño máximo permitido.",
     }
+
+
+def test_upload_rejects_unreadable_text_before_generating_embeddings(
+    client: TestClient,
+    monkeypatch,
+) -> None:
+    embedding_calls = []
+    monkeypatch.setattr(
+        "app.services.document_service.generate_embedding",
+        lambda text: embedding_calls.append(text),
+    )
+    pdf_bytes = build_two_page_pdf(
+        texts=("\x01" * 100, "\x02" * 100),
+    )
+
+    response = client.post(
+        "/upload",
+        files={
+            "file": (
+                "texto-corrupto.pdf",
+                pdf_bytes,
+                "application/pdf",
+            )
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"] == {
+        "code": "unreadable_document",
+        "message": (
+            "El PDF contiene una capa de texto no legible. Aplica OCR o "
+            "sube una versión con texto seleccionable."
+        ),
+    }
+    assert embedding_calls == []
 
 
 def test_upload_rejects_pdf_over_configured_page_limit(
