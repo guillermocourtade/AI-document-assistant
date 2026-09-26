@@ -292,16 +292,16 @@ def test_chat_normalizes_only_validated_citation_format(
         },
         {
             "source_id": "S3",
-            "text": "Tercera fuente de la misma página.",
+            "text": "Tercera fuente de una página distinta.",
             "filename": "manual.pdf",
-            "page_number": 12,
+            "page_number": 13,
             "chunk_index": 3,
         },
         {
             "source_id": "S4",
-            "text": "Fuente de una página distinta.",
+            "text": "Cuarta fuente nuevamente de la página 12.",
             "filename": "manual.pdf",
-            "page_number": 13,
+            "page_number": 12,
             "chunk_index": 4,
         },
     ]

@@ -19,6 +19,9 @@ _MODEL_PAGE_CITATION = re.compile(r"\[p\.\s*\d+\]", re.IGNORECASE)
 _SOURCE_CITATION = re.compile(r"\[\[\s*(S\d+)\s*\]\]")
 _UNKNOWN_MARKER = re.compile(r"\[\[[^\[\]\n]+\]\]")
 _FINAL_PAGE_CITATION = re.compile(r"\[p\. (?P<page_number>\d+)\]")
+_PAGE_CITATION_GROUP = re.compile(
+    r"\[p\. \d+\](?:[ \t]+\[p\. \d+\])+"
+)
 
 
 def _build_sources(results: list[dict]) -> list[dict]:
@@ -78,12 +81,21 @@ def _normalize_validated_citations(
 
     answer = _FINAL_PAGE_CITATION.sub(normalize_spacing, answer)
 
-    for page_number in sorted(validated_pages):
-        citation = re.escape(f"[p. {page_number}]")
-        consecutive_duplicates = re.compile(
-            rf"({citation})(?:[ \t]*{citation})+"
-        )
-        answer = consecutive_duplicates.sub(r"\1", answer)
+    def deduplicate_citation_group(match: re.Match) -> str:
+        unique_citations: list[str] = []
+        seen_pages: set[int] = set()
+
+        for citation_match in _FINAL_PAGE_CITATION.finditer(match.group(0)):
+            page_number = int(citation_match.group("page_number"))
+            if page_number in seen_pages:
+                continue
+
+            seen_pages.add(page_number)
+            unique_citations.append(citation_match.group(0))
+
+        return " ".join(unique_citations)
+
+    answer = _PAGE_CITATION_GROUP.sub(deduplicate_citation_group, answer)
 
     return answer
 
